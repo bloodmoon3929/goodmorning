@@ -5,3 +5,8 @@ node_modules/
 target/
 __pycache__/
 .env
+
+# 저작권 있는 캐릭터 이미지가 들어간 디자인 결과물 (팀 내부 공유)
+frontend/design/*.pptx
+frontend/design/assets/
+~$*.pptx
