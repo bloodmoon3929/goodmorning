@@ -1,6 +1,6 @@
 # 굿모닝 DB 설계
 
-> PPT `frontend/design/굿모닝_UI구상.pptx`의 DB 슬라이드와 같은 내용 (같은 정의에서 생성).
+> PPT `design/굿모닝_UI구상.pptx`(공개용 정리: `docs/04-db.md`)의 DB 슬라이드와 같은 내용 (같은 정의에서 생성).
 > PostgreSQL + pgvector(임베딩) + PostGIS(매장 좌표). 가격 · 재고는 버전(`catalog.variant`) 단위.
 
 ## 주요 관계

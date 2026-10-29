@@ -29,7 +29,7 @@ UST AI 응용을 위한 UX 설계 · 팀 에뚜리들 (김상우, 임상원, 전
 |단계|산출물|위치|
 |--|--|--|
 |1. 명세|전체 기능·요구사항 명세 (이 문서)|`README.md`|
-|2. UI|화면 설계 (PPT 또는 Figma) + 화면 명세|`frontend/`|
+|2. UI|화면 설계 PPT (슬라이드 정리는 `docs/`), 화면 명세|`docs/`, `frontend/`|
 |3. 백엔드 명세|UI의 버튼·화면별 API, 배치 작업, DB 설계|`backend/`|
 |4. 목업·구현|목업 데이터, 클릭 가능한 프로토타입|`frontend/`, `backend/`|
 
@@ -40,18 +40,30 @@ UST AI 응용을 위한 UX 설계 · 팀 에뚜리들 (김상우, 임상원, 전
 ```text
 goodmorning/
 ├── README.md              # 전체 명세 (이 문서)
-├── frontend/
+├── docs/                  # UI 구상 PPT를 슬라이드 이미지 + 글로 정리 (공개용, 캐릭터 사진은 이모지)
+│   ├── README.md          # 목차
+│   ├── 01-screen-flow.md  # 화면 흐름 · 공통 요소
+│   ├── 02-screens.md      # 화면별 UI 24장
+│   ├── 03-tech-spec.md    # 기술 스펙
+│   ├── 04-db.md           # DB 설계
+│   └── slides/            # 슬라이드 이미지 43장
+├── design/                # 원본 PPT · 캐릭터 이미지 · 로고 (저장소에는 올리지 않음)
+├── frontend/              # Flutter 앱
 │   ├── README.md          # 화면 명세: 화면별 구성 요소, 버튼, 상태
-│   └── design/            # PPT·Figma 결과물, 화면 캡처
+│   ├── lib/               # 위젯(컴포넌트) 단위 구조 — lib/README.md
+│   │   ├── components/    # 여러 화면이 함께 쓰는 위젯 (상품 카드, 배지, 필터, 스켈레톤 …)
+│   │   └── features/      # 화면 단위 (screen + view_model + widgets)
+│   └── test/
 └── backend/
     ├── README.md          # API 명세, 배치 작업, DB 설계
-    ├── api/               # Rust API 서버
-    ├── ai/                # Python AI 서버 (임베딩·검색·상품 매칭)
+    ├── db.md              # 테이블 정의
+    ├── api/               # Rust API 서버 (MVC) — api/README.md
+    ├── ai/                # Python AI 서버 (임베딩 · 검색 · 상품 매칭)
     ├── collector/         # Python 수집기 (쇼핑 API, Scrapy + Playwright)
-    └── db/                # PostgreSQL 스키마
+    └── db/migrations/     # PostgreSQL 스키마 변경 SQL
 ```
 
-> `backend/` 하위 폴더는 단계 4에서 만든다.
+> 폴더와 규칙만 먼저 만들어 두었다. 코드는 단계 4에서 이 구조에 맞춰 넣는다.
 
 ## 시스템 구성
 
@@ -59,7 +71,7 @@ goodmorning/
 
 |계층|기술|책임|예시|
 |--|--|--|--|
-|Frontend|웹 (모바일 우선)|화면 표시, 사용자 입력|배지 필터, 지도·리스트 전환|
+|Frontend|Flutter (Dart)|화면 표시, 사용자 입력, 로딩 중 스켈레톤|배지 필터, 지도·리스트 전환|
 |API 서버|Rust|요청 처리, 권한 확인, DB 조회·저장|상품 상세, 재고 제보 저장|
 |AI 서버|Python, EmbeddingGemma 2|이미지·텍스트 임베딩, 유사도 검색, 상품 매칭|사진 검색, 판매자 상품 등록 시 후보 제시|
 |수집기|Python, Scrapy + Playwright|외부 몰·매장 정보 수집|쇼핑 API 가격 수집, 공지 페이지 크롤링|
@@ -69,7 +81,7 @@ goodmorning/
 
 ```mermaid
 graph LR
-    User([사용자]) --> FE[Frontend<br/>웹 · 모바일 우선]
+    User([사용자]) --> FE[Frontend<br/>Flutter 앱]
     Owner([판매자·사장님]) --> FE
     FE --> API[API 서버<br/>Rust]
     API --> DB[(PostgreSQL<br/>+ pgvector)]
@@ -334,7 +346,7 @@ flowchart TD
 
 ### 프로그래밍 요구사항
 
-1. 프론트엔드는 모바일 화면을 우선으로 설계한다. (행동 관찰 참여자 중 모바일 사용자는 목록 탐색 위주로 사용)
+1. 프론트엔드는 Flutter로 모바일 화면을 우선해 만든다. 데이터를 기다리는 동안은 스켈레톤을 보여 준다. (행동 관찰 참여자 중 모바일 사용자는 목록 탐색 위주로 사용)
 2. API 서버는 Rust, AI 서버와 수집기는 Python으로 작성한다.
 3. DB는 PostgreSQL을 사용하고, 임베딩은 pgvector로 같은 DB에 저장한다.
 4. 모든 가격·재고 데이터에는 출처(`api` / `crawl` / `owner` / `report`)와 확인 시각을 저장한다.
