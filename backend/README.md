@@ -21,3 +21,5 @@
 ## DB 설계
 
 스키마 구분은 루트 `README.md`의 데이터 구분(`catalog` / `online` / `offline` / `account` / `ingest`)을 따른다.
+
+테이블 정의 (컬럼 · 타입 · 제약 · 설명 · 쓰는 화면): [db.md](db.md)
