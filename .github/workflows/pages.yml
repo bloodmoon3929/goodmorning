@@ -1,0 +1,88 @@
+name: 프로토타입 배포 (GitHub Pages)
+
+# main: 정적 프로토타입(/)과 Flutter 웹 앱(/app/)을 GitHub Pages로 배포한다.
+# 그 밖의 브랜치 · PR: 같은 결과물을 만들어 실행 결과에 zip(artifact)으로 첨부한다.
+#   (github-pages 환경은 main만 배포할 수 있게 보호되어 있다)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'prototype/**'
+      - 'frontend/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'prototype/**'
+      - 'frontend/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Flutter 설치
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+
+      - name: Flutter 앱 검사 · 테스트
+        working-directory: frontend
+        run: |
+          flutter pub get
+          dart format --output=none --set-exit-if-changed lib test
+          dart analyze
+          flutter test
+
+      # 글꼴 · CanvasKit을 앱 안에 함께 넣는다 (외부 CDN을 쓰지 않음)
+      - name: Flutter 앱 웹 빌드
+        working-directory: frontend
+        run: flutter build web --release --base-href /goodmorning/app/ --no-web-resources-cdn --no-wasm-dry-run
+
+      - name: 정적 프로토타입(FigCraft 화면 + 뷰어)과 Flutter 앱 모으기
+        run: |
+          mkdir -p _site/app
+          cp -r prototype/site/. _site/
+          cp -r frontend/build/web/. _site/app/
+
+      # 정적 프로토타입은 zip을 풀고 index.html을 바로 열면 보인다.
+      # Flutter 앱(app/)은 파일로 열면 안 뜬다: zip을 goodmorning/ 폴더에 풀고, 그 바깥 폴더에서
+      # python3 -m http.server 8000 → http://localhost:8000/goodmorning/app/
+      - name: 내려받아 볼 수 있게 첨부
+        uses: actions/upload-artifact@v7
+        with:
+          name: goodmorning-prototype
+          path: _site
+
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/configure-pages@v6
+
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

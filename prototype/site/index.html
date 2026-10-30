@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>굿모닝 프로토타입</title>
+  <meta name="description" content="굿모닝(굿즈 모으는 닝겐) UI 구상을 FigCraft로 만든 클릭 프로토타입">
+  <link rel="icon" href="screens/login.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">굿모닝</span>
+      <span class="sub">클릭 프로토타입 · 팀 에뚜리들</span>
+    </div>
+    <div class="actions">
+      <button type="button" id="btn-back" title="뒤로 (← 또는 Backspace)">‹ 뒤로</button>
+      <button type="button" id="btn-restart" title="로그인 화면부터 다시">처음부터</button>
+      <label class="toggle" title="누를 수 있는 곳 표시 (H)">
+        <input type="checkbox" id="chk-hints"> 누를 수 있는 곳
+      </label>
+      <a class="app-link" id="app-link" href="app/" hidden>Flutter 앱 ›</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <div class="phone" id="phone">
+        <div class="viewport" id="viewport">
+          <div class="screen" id="screen">
+            <img id="screen-img" alt="">
+            <div class="hotspots" id="hotspots"></div>
+          </div>
+        </div>
+      </div>
+      <p class="caption" id="caption"></p>
+    </section>
+
+    <aside class="panel">
+      <h2>화면 목록</h2>
+      <p class="hint">번호는 UI 구상 PPT의 슬라이드 번호예요. 화면을 눌러 바로 이동하거나, 휴대폰 화면 안을 눌러 흐름대로 따라가 보세요.</p>
+      <ol class="list" id="list"></ol>
+      <p class="source" id="source"></p>
+    </aside>
+  </main>
+
+  <script src="screens.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

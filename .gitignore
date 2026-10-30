@@ -10,3 +10,6 @@ __pycache__/
 design/*.pptx
 design/assets/
 ~$*.pptx
+
+# FigCraft 프로토타입 생성 중간 파일
+prototype/figcraft/.build/
