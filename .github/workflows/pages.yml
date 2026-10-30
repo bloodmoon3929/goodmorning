@@ -1,8 +1,17 @@
 name: 프로토타입 배포 (GitHub Pages)
 
+# main: 정적 프로토타입을 GitHub Pages로 배포한다.
+# 그 밖의 브랜치 · PR: 같은 결과물을 만들어 실행 결과에 zip(artifact)으로 첨부한다.
+#   (github-pages 환경은 main만 배포할 수 있게 보호되어 있다)
 on:
   push:
-    branches: [main, feat/prototype]
+    branches: [main]
+    paths:
+      - 'prototype/**'
+      - 'frontend/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    branches: [main]
     paths:
       - 'prototype/**'
       - 'frontend/**'
@@ -15,27 +24,36 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 정적 프로토타입(FigCraft 화면 + 뷰어) 모으기
         run: |
           mkdir -p _site
           cp -r prototype/site/. _site/
 
-      - uses: actions/configure-pages@v5
+      - name: 내려받아 볼 수 있게 첨부 (zip을 풀고 index.html 열기)
+        uses: actions/upload-artifact@v7
+        with:
+          name: goodmorning-prototype
+          path: _site
 
-      - uses: actions/upload-pages-artifact@v3
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/configure-pages@v6
+
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -43,4 +61,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

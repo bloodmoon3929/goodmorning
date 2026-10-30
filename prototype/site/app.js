@@ -98,8 +98,12 @@
   }
 
   async function init() {
-    const res = await fetch('screens.json', { cache: 'no-cache' });
-    data = await res.json();
+    if (window.GM_SCREENS) {
+      data = window.GM_SCREENS;
+    } else {
+      const res = await fetch('screens.json', { cache: 'no-cache' });
+      data = await res.json();
+    }
     bySlug = Object.fromEntries(data.screens.map((s) => [s.slug, s]));
     buildList();
     let saved = '0';

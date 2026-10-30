@@ -1396,6 +1396,8 @@ def main():
                     for s in d.screens],
     }
     (SITE / 'screens.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding='utf-8')
+    # 내려받은 파일을 브라우저로 바로 열 때(file://)는 fetch가 막히므로 스크립트로도 둔다
+    (SITE / 'screens.js').write_text('window.GM_SCREENS = ' + json.dumps(manifest, ensure_ascii=False) + ';\n', encoding='utf-8')
     n_links = sum(len(s['hotspots']) for s in d.screens)
     print(f'완료: {OUT_FIG.relative_to(ROOT)}, PNG {len(d.screens)}장, 클릭 영역 {n_links}개')
 
