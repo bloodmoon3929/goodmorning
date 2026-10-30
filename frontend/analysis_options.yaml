@@ -1,0 +1,12 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+
+# dart format 줄 길이 (lib · test 전체를 이 폭으로 맞춤)
+formatter:
+  page_width: 160

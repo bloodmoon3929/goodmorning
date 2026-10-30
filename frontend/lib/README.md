@@ -8,7 +8,7 @@ lib/
 ├── app/              # 앱 시작점, 화면 이동(라우팅), 테마 적용
 ├── core/
 │   ├── theme/        # 색 코드 · 글꼴 · 간격 (docs/01-screen-flow.md 의 색 표)
-│   ├── network/      # API 호출 공통 (주소, 로그인 토큰, 오류 처리)
+│   ├── network/      # API 호출 공통. 지금은 목업 API(mock_api.dart · mock_data.dart)가 같은 모양으로 답한다
 │   └── cache/        # 미리 로딩 · 캐시 (docs/03-tech-spec.md 33번)
 ├── models/           # 데이터 모양 (API 응답과 같은 구조: Product, Variant, Store, Stock …)
 ├── components/       # 여러 화면이 함께 쓰는 위젯
@@ -19,7 +19,15 @@ lib/
 │   ├── ip_tile/          # IP 타일 (내 IP, 회원가입 IP 고르기, IP 목록 조정)
 │   ├── bottom_tab_bar/   # 하단 탭 바
 │   ├── skeleton/         # 스켈레톤 (컴포넌트마다 로딩 중 모양)
-│   └── bottom_sheet/     # 아래에서 올라오는 창 (재고 제보, 문제 제기, 매장 미리보기)
+│   ├── bottom_sheet/     # 아래에서 올라오는 창 (재고 제보, 문제 제기, 매장 미리보기)
+│   ├── buttons/          # 주요 · 보조 · 누를 수 없음 버튼
+│   ├── chips/            # 분류 · 필터 칩
+│   ├── emoji/            # 이모지 그림 (Fluent Emoji 3D)
+│   ├── goods_thumb/      # 상품 · IP · 캐릭터 사진 자리
+│   ├── section_header/   # 영역 제목 + 전체 ›
+│   ├── store_card/       # 길찾기 · 전화 · 저장 버튼 줄
+│   ├── photo_pick/       # 사진 고르기 창 (사진 검색, 상품 등록)
+│   └── external_move/    # 앱 밖 이동 (쇼핑몰 · 지도 · 전화), 로그인이 필요한 동작
 └── features/         # 화면 단위 (슬라이드 번호는 docs/02-screens.md)
     ├── auth/             # 로그인 · 회원가입 (4–6)
     ├── home/             # 홈 (7)
