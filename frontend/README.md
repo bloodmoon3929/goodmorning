@@ -98,3 +98,18 @@ UI 구상 PPT([docs/02-screens.md](../docs/02-screens.md))의 슬라이드 순�
 |③|품목으로 보기|피규어 · 인형 · 키링 · 아크릴 · 프라모델 · 랜덤 목록으로 이동|
 |④|내 IP 타일|IP 화면으로 이동 (캐릭터 선택 · 품목 필터)|
 |⑤|IP 목록 조정|보일 IP 고르기 · 빼기, 없는 IP는 추가 요청|
+
+## 프로토타입 앱 실행
+
+`lib/`에 4–25번 화면을 Flutter로 만들었다. 서버 대신 목업 API(`lib/core/network/mock_api.dart`)가 조금씩 늦게 답해서 스켈레톤 · 부분 로딩까지 볼 수 있다.
+
+```bash
+cd frontend
+flutter pub get
+flutter run -d chrome        # 웹으로 실행 (넓은 화면에서는 휴대폰 틀 안에 보인다)
+flutter test                 # 화면 흐름 · API 테스트
+```
+
+- 웹 배포본: `main`에 합쳐지면 GitHub Actions가 `https://bloodmoon3929.github.io/goodmorning/app/`으로 올린다 (정적 클릭 프로토타입은 `/goodmorning/`).
+- 주소에 `?as=member`(회원) 또는 `?as=guest`(둘러보기)를 붙이면 로그인 단계를 건너뛴다. 예: `…/app/?as=member#/stores?view=map`
+- 글꼴(Pretendard)과 이모지 그림(Fluent Emoji 3D)은 `assets/`에 함께 들어 있다. 라이선스는 각 폴더의 LICENSE 파일.
