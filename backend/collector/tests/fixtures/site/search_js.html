@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>자바스크립트로 그리는 검색 결과</title></head>
+<body>
+<div id="app">불러오는 중…</div>
+<script>
+  // 서버가 보낸 HTML에는 상품이 없고, 브라우저에서 스크립트가 그린다
+  setTimeout(function () {
+    var items = [["/goods/201", "치이카와 마스코트 키링", "9,900원"], ["/goods/202", "하치와레 랜덤 키링", "9,000원"]];
+    document.getElementById("app").innerHTML = items.map(function (it) {
+      return '<div class="goods-card"><a href="' + it[0] + '"><span class="goods-name">' + it[1] + '</span></a><span class="goods-price">' + it[2] + '</span></div>';
+    }).join("");
+  }, 200);
+</script>
+</body></html>
