@@ -1,0 +1,33 @@
+{
+  "rCode": "0",
+  "rMessage": "",
+  "data": {
+    "landingUrl": "https://link.coupang.com/re/AFFSRP?lptag=AF0000000&pageKey=%EC%BF%A0%EB%A1%9C%EB%AF%B8&traceid=V0-000",
+    "productData": [
+      {
+        "rank": 1,
+        "isRocket": true,
+        "isFreeShipping": true,
+        "productId": 1000000001,
+        "productImage": "https://image.example/1000000001.jpg",
+        "productName": "산리오 쿠로미 마스코트 인형 10cm",
+        "productPrice": 12500,
+        "productUrl": "https://link.coupang.com/re/AFFSDP?lptag=AF0000000&pageKey=1000000001&traceid=V0-001",
+        "categoryName": "인형",
+        "keyword": "쿠로미 마스코트 인형"
+      },
+      {
+        "rank": 2,
+        "isRocket": false,
+        "isFreeShipping": false,
+        "productId": 1000000002,
+        "productImage": "https://image.example/1000000002.jpg",
+        "productName": "쿠로미 마스코트 인형 빅 20cm",
+        "productPrice": 23900,
+        "productUrl": "https://link.coupang.com/re/AFFSDP?lptag=AF0000000&pageKey=1000000002&traceid=V0-002",
+        "categoryName": "인형",
+        "keyword": "쿠로미 마스코트 인형"
+      }
+    ]
+  }
+}

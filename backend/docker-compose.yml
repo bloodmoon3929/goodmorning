@@ -1,0 +1,42 @@
+# 굿모닝 백엔드 로컬 실행
+#   docker compose up --build        # DB + API (API가 시작할 때 마이그레이션 · 개발용 데이터를 넣는다)
+#   docker compose up db             # DB만 (수집기 · cargo run 으로 따로 실행할 때)
+# 수집기(collector)는 이 DB에 붙어서 실행한다 — collector/README.md
+
+services:
+  db:
+    build: ./db
+    image: goodmorning-db:17
+    environment:
+      POSTGRES_USER: goodmorning
+      POSTGRES_PASSWORD: goodmorning
+      POSTGRES_DB: goodmorning
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goodmorning -d goodmorning"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://goodmorning:goodmorning@db:5432/goodmorning
+      JWT_SECRET: dev-only-secret-change-me
+      BIND_ADDR: 0.0.0.0:8080
+      RUN_MIGRATIONS: "true"
+      SEED_DEV_DATA: "true"
+      RUST_LOG: info,goodmorning_api=debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

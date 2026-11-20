@@ -13,3 +13,10 @@ design/assets/
 
 # FigCraft 프로토타입 생성 중간 파일
 prototype/figcraft/.build/
+
+# 백엔드
+.venv/
+.pytest_cache/
+.ruff_cache/
+backend/collector/sites.toml
+backend/collector/logs/
