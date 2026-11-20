@@ -4,6 +4,18 @@
 
 UST AI 응용을 위한 UX 설계 · 팀 에뚜리들 (김상우, 임상원, 전하린)
 
+## 개발할 것
+
+|#|항목|상태|위치|
+|--|--|--|--|
+|1|크롤링 구현|구현함 (Scrapy + Playwright, robots.txt 준수, `crawl_allowed` 몰만)|[`backend/collector/spiders/`](backend/collector/spiders/)|
+|2|쇼핑 API 구현|구현함 (쿠팡 파트너스, 키 발급 후 실제 호출 확인 필요)|[`backend/collector/api_clients/`](backend/collector/api_clients/)|
+|3|DB 구현|구현함 (PostgreSQL + PostGIS + pgvector, 스키마 5개 · 테이블 28개, 개발용 가상 데이터)|[`backend/db/`](backend/db/)|
+|4|Rust 기반 백엔드 구현|구현함 (Axum + sqlx, MVC)|[`backend/api/`](backend/api/), API 목록은 [`backend/README.md`](backend/README.md)|
+|5|SAM 3D나 가우시안 스플래팅으로 에셋을 만들어, 이 에셋을 나만의 집에 장식할 수 있는 기능 (싸이월드 느낌)|아직|—|
+
+> 네이버 쇼핑 검색 API는 2026-07-31에 종료되어(NAVER API HUB로도 옮겨지지 않음) 쇼핑 API는 쿠팡 파트너스만 연동했다.
+
 ## 배경
 
 ### 사용자 조사 결과
@@ -55,15 +67,16 @@ goodmorning/
 │   │   └── features/      # 화면 단위 (screen + view_model + widgets)
 │   └── test/
 └── backend/
-    ├── README.md          # API 명세, 배치 작업, DB 설계
+    ├── README.md          # API 명세, 배치 작업, 실행 · 테스트 방법
     ├── db.md              # 테이블 정의
+    ├── docker-compose.yml # 로컬 실행: DB + API
     ├── api/               # Rust API 서버 (MVC) — api/README.md
-    ├── ai/                # Python AI 서버 (임베딩 · 검색 · 상품 매칭)
-    ├── collector/         # Python 수집기 (쇼핑 API, Scrapy + Playwright)
-    └── db/migrations/     # PostgreSQL 스키마 변경 SQL
+    ├── ai/                # Python AI 서버 (임베딩 · 검색 · 상품 매칭) — 아직 폴더만
+    ├── collector/         # Python 수집기 (쿠팡 파트너스 API, Scrapy + Playwright) — collector/README.md
+    └── db/                # PostgreSQL 이미지 · 마이그레이션 · 개발용 가상 데이터 — db/README.md
 ```
 
-> 폴더와 규칙만 먼저 만들어 두었다. 코드는 단계 4에서 이 구조에 맞춰 넣는다.
+> 백엔드는 DB · API · 수집기까지 구현했다. AI 서버와 앱(Flutter)의 HTTP 연결은 아직이다 (앱은 목업 API로 동작).
 
 ## 시스템 구성
 
@@ -90,7 +103,7 @@ graph LR
 
     subgraph 수집
         COL[수집기<br/>Python]
-        ShopAPI[쇼핑 API<br/>네이버 쇼핑 · 쿠팡 파트너스]
+        ShopAPI[쇼핑 API<br/>쿠팡 파트너스]
         Crawl[크롤링<br/>Scrapy + Playwright]
     end
     ShopAPI --> COL
