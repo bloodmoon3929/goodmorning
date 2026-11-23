@@ -118,7 +118,7 @@ async function refreshCollector() {
     pill.classList.toggle('on', c.worker_alive);
     pill.textContent = c.worker_alive
       ? `수집기 연결됨 · 대기 ${c.queued} · 실행 중 ${c.running}`
-      : `수집기 꺼짐 — backend/collector에서 uv run python -m demo${c.queued ? ` (대기 ${c.queued})` : ''}`;
+      : `수집기 꺼짐 — backend/collector에서 uv run python -m worker${c.queued ? ` (대기 ${c.queued})` : ''}`;
   } catch { /* 로그인 화면으로 넘어감 */ }
 }
 
