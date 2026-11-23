@@ -21,7 +21,7 @@ class SignupSteps extends StatelessWidget {
               children: [
                 Container(
                   height: 4,
-                  decoration: BoxDecoration(color: i == active ? AppColors.orange : AppColors.line, borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(color: i == active ? AppColors.primary : AppColors.line, borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -29,7 +29,7 @@ class SignupSteps extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: i == active ? FontWeight.w600 : FontWeight.w500,
-                    color: i == active ? AppColors.orange : AppColors.sub,
+                    color: i == active ? AppColors.primary : AppColors.sub,
                   ),
                 ),
               ],

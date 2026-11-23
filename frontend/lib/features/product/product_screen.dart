@@ -236,7 +236,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       duration: const Duration(milliseconds: 180),
                       height: 3,
                       margin: const EdgeInsets.symmetric(horizontal: 18),
-                      decoration: BoxDecoration(color: t == vm.tab ? AppColors.orange : Colors.transparent, borderRadius: BorderRadius.circular(2)),
+                      decoration: BoxDecoration(color: t == vm.tab ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(2)),
                     ),
                   ],
                 ),
@@ -276,7 +276,7 @@ class _ProductScreenState extends State<ProductScreen> {
           children: [
             const AppChip('가까운 순', size: 12),
             const SizedBox(width: 8),
-            AppChip('재고 있는 곳만', size: 12, selected: vm.inStockOnly, style: ChipStyle.orange, onTap: vm.toggleInStock),
+            AppChip('재고 있는 곳만', size: 12, selected: vm.inStockOnly, style: ChipStyle.point, onTap: vm.toggleInStock),
             const Spacer(),
             TextButton(
               onPressed: () => context.go('/stores?view=map'),

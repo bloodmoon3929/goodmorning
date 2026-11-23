@@ -17,7 +17,7 @@ class PhoneFrame extends StatelessWidget {
     if (size.width < 600) return child;
     final scale = ((size.height - 48) / (phone.height + 24)).clamp(0.55, 1.0);
     return ColoredBox(
-      color: const Color(0xFFEEF0F3),
+      color: const Color(0xFFF5EFE4), // 시안 배경 베이지
       child: Center(
         child: Transform.scale(
           scale: scale,

@@ -140,7 +140,7 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
               onPressed: () => _report(d),
               child: Text(
                 '재고가 다른가요? 제보하기 ›',
-                style: AppText.label.copyWith(color: AppColors.orange, fontWeight: FontWeight.w600),
+                style: AppText.label.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -185,7 +185,7 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
                   Text('${item.variant.label} · ${item.stock.sourceLabel}', style: AppText.tiny),
                   if (mine != null) ...[
                     const SizedBox(height: 2),
-                    Text('내 제보: ${mine.$1.short} · ${mine.$2}', style: AppText.tiny.copyWith(color: AppColors.orange)),
+                    Text('내 제보: ${mine.$1.short} · ${mine.$2}', style: AppText.tiny.copyWith(color: AppColors.primary)),
                   ],
                 ],
               ),
@@ -212,7 +212,7 @@ class _ActionTile extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Material(
-        color: on ? AppColors.orangeBg : AppColors.bg,
+        color: on ? AppColors.primaryBg : AppColors.bg,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -226,7 +226,7 @@ class _ActionTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   label,
-                  style: AppText.label.copyWith(fontSize: 12, fontWeight: FontWeight.w600, color: on ? AppColors.orange : AppColors.ink),
+                  style: AppText.label.copyWith(fontSize: 12, fontWeight: FontWeight.w600, color: on ? AppColors.primary : AppColors.ink),
                 ),
               ],
             ),

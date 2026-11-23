@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../models/sales.dart';
 
 /// 지도 자리 (프로토타입). 실제 지도 SDK 대신 길 · 강 · 공원을 그리고, 매장 마커를 재고 상태 색으로 찍는다.
-/// 마커 색 = 재고 상태, 내 위치 = 파란 점, 고른 마커 = 주황 테두리.
+/// 마커 색 = 재고 상태, 내 위치 = 파란 점, 고른 마커 = 남색 테두리.
 class FakeMap extends StatelessWidget {
   const FakeMap({super.key, required this.stores, required this.selectedId, required this.onSelect});
 
@@ -78,7 +78,7 @@ class FakeMap extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.orange, width: 3),
+                      border: Border.all(color: AppColors.primary, width: 3),
                     ),
                   ),
                 Container(

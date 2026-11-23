@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goodmorning/app/app.dart';
+import 'package:goodmorning/components/ip_tile/ip_tile.dart';
 import 'package:goodmorning/core/network/mock_api.dart';
 
 /// 화면 흐름 테스트: 지연 없는 목업 API로 앱을 띄우고 PPT의 주요 동선을 눌러 본다.
@@ -21,8 +22,13 @@ Future<void> start(WidgetTester t) async {
   await settle(t);
 }
 
+/// 표지와 같은 로그인 화면: SNS로 처음 들어오면 IP를 고르고 시작한다
 Future<void> loginAsMember(WidgetTester t) async {
-  await t.tap(find.text('로그인'));
+  await t.tap(find.text('카카오'));
+  await settle(t, 10);
+  await t.tap(find.byType(IpTileGrid).first);
+  await settle(t, 3);
+  await t.tap(find.textContaining('굿모닝 시작하기'));
   await settle(t, 10);
 }
 
@@ -39,11 +45,14 @@ Future<void> loadPretendard() async {
 void main() {
   setUpAll(loadPretendard);
 
-  testWidgets('로그인 없이 둘러보기 → 홈 → 매장 찾기 → 매장 상세', (t) async {
+  testWidgets('로그인 없이 모아보기 → 홈 → 매장 찾기 → 매장 상세', (t) async {
     await start(t);
-    expect(find.text('굿즈 모으는 닝겐'), findsOneWidget);
+    expect(find.text('SNS로 모으러 가기'), findsOneWidget);
+    for (final sns in ['카카오', '네이버', '구글', 'Apple']) {
+      expect(find.text(sns), findsOneWidget);
+    }
 
-    await t.tap(find.text('로그인 없이 둘러보기 ›'));
+    await t.tap(find.text('로그인 없이 모아보기'));
     await settle(t);
     expect(find.text('굿즈 이름, 캐릭터 검색'), findsOneWidget);
 

@@ -128,7 +128,7 @@ class _AlertsState extends _ProductListState<_Alerts> {
             SwitchListTile(
               title: Text(e.key, style: AppText.body),
               value: e.value,
-              activeTrackColor: AppColors.orange,
+              activeTrackColor: AppColors.primary,
               onChanged: (v) => setState(() => _types[e.key] = v),
             ),
           const _Header('가격 · 재입고 알림을 받는 굿즈'),
@@ -146,7 +146,7 @@ class _AlertsState extends _ProductListState<_Alerts> {
                     subtitle: Text(p.meta, style: AppText.tiny),
                     trailing: Switch(
                       value: state.priceAlerts.contains(p.product.id),
-                      activeTrackColor: AppColors.orange,
+                      activeTrackColor: AppColors.primary,
                       onChanged: (_) => state.togglePriceAlert(p.product.id),
                     ),
                     onTap: () => context.push('/product/${p.product.id}'),

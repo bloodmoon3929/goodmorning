@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../emoji/emoji_image.dart';
 
-enum ChipStyle { dark, orange }
+enum ChipStyle { dark, point }
 
-/// 분류 · 필터 칩. 선택되면 검정(분류) 또는 주황 테두리(필터).
+/// 분류 · 필터 칩. 선택되면 남색 채움(분류) 또는 남색 테두리(필터).
 class AppChip extends StatelessWidget {
   const AppChip(this.label, {super.key, this.selected = false, this.onTap, this.style = ChipStyle.dark, this.icon, this.trailingArrow = false, this.size = 13});
 
@@ -23,7 +23,7 @@ class AppChip extends StatelessWidget {
         ? (AppColors.white, AppColors.ink, AppColors.line)
         : style == ChipStyle.dark
         ? (AppColors.ink, AppColors.white, AppColors.ink)
-        : (AppColors.orangeBg, AppColors.orange, AppColors.orange);
+        : (AppColors.primaryBg, AppColors.primary, AppColors.primary);
     return Semantics(
       selected: selected,
       button: true,
@@ -39,7 +39,7 @@ class AppChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[EmojiImage(icon!, size: size + 4), const SizedBox(width: 4)],
-                if (selected && style == ChipStyle.orange && icon == null) ...[Icon(Icons.check_rounded, size: size + 2, color: fg), const SizedBox(width: 3)],
+                if (selected && style == ChipStyle.point && icon == null) ...[Icon(Icons.check_rounded, size: size + 2, color: fg), const SizedBox(width: 3)],
                 Text(
                   label,
                   style: TextStyle(fontSize: size, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),

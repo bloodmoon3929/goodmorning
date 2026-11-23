@@ -24,7 +24,7 @@ ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: 'Pretendard',
-    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.orange, primary: AppColors.orange, surface: AppColors.white, onSurface: AppColors.ink),
+    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary, primary: AppColors.primary, surface: AppColors.white, onSurface: AppColors.ink),
     scaffoldBackgroundColor: AppColors.white,
     splashFactory: InkSparkle.splashFactory,
   );
@@ -54,7 +54,7 @@ ThemeData buildAppTheme() {
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.orange, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
       ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -64,6 +64,6 @@ ThemeData buildAppTheme() {
       dragHandleColor: AppColors.line,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
     ),
-    textSelectionTheme: const TextSelectionThemeData(cursorColor: AppColors.orange),
+    textSelectionTheme: const TextSelectionThemeData(cursorColor: AppColors.primary),
   );
 }

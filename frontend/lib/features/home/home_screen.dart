@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final offlineFirst = state.channel == Channel.offline;
             final sections = <Widget>[if (offlineFirst) ..._stores() else ..._myIps(), if (offlineFirst) ..._myIps() else ..._stores(), ..._newGoods()];
             return RefreshIndicator(
-              color: AppColors.orange,
+              color: AppColors.primary,
               onRefresh: () {
                 state.api.invalidate('new:');
                 state.api.invalidate('nearby:');
@@ -77,12 +77,16 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Row(
           children: [
-            Text('굿모닝', style: AppText.display.copyWith(fontSize: 24, color: AppColors.orange)),
+            Semantics(
+              header: true,
+              label: '굿모닝 · 굿즈 모으는 닝겐들',
+              child: ExcludeSemantics(child: Image.asset('assets/brand/logo.png', height: 34)),
+            ),
             const Spacer(),
             IconButton(
               tooltip: '알림',
               onPressed: () => context.push('/notifications'),
-              icon: Badge(isLabelVisible: state.unreadCount > 0, smallSize: 8, backgroundColor: AppColors.orange, child: const EmojiImage('bell', size: 28)),
+              icon: Badge(isLabelVisible: state.unreadCount > 0, smallSize: 8, backgroundColor: AppColors.peach, child: const EmojiImage('bell', size: 28)),
             ),
           ],
         ),

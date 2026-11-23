@@ -57,7 +57,7 @@ class AddTileSmall extends StatelessWidget {
 }
 
 /// 회원가입 IP 고르기 · IP 목록 조정 · 굿즈 탐색의 큰 IP 타일.
-/// 고르면 주황 테두리와 ✓.
+/// 고르면 남색 테두리와 ✓.
 class IpTileGrid extends StatelessWidget {
   const IpTileGrid({super.key, required this.ip, required this.onTap, this.selected = false, this.sub, this.showCheck = true});
 
@@ -75,7 +75,7 @@ class IpTileGrid extends StatelessWidget {
       color: AppColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: selected ? AppColors.orange : AppColors.line, width: selected ? 2 : 1),
+        side: BorderSide(color: selected ? AppColors.primary : AppColors.line, width: selected ? 2 : 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -100,7 +100,7 @@ class IpTileGrid extends StatelessWidget {
                 top: 8,
                 child: CircleAvatar(
                   radius: 9,
-                  backgroundColor: AppColors.orange,
+                  backgroundColor: AppColors.primary,
                   child: Icon(Icons.check_rounded, size: 13, color: AppColors.white),
                 ),
               ),

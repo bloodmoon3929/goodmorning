@@ -46,7 +46,7 @@ class BottomTabBar extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: i == currentIndex ? FontWeight.w600 : FontWeight.w500,
-                            color: i == currentIndex ? AppColors.orange : AppColors.sub,
+                            color: i == currentIndex ? AppColors.primary : AppColors.sub,
                           ),
                         ),
                       ],

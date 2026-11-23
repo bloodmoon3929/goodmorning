@@ -127,7 +127,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         child: Container(
                           width: 6,
                           height: 6,
-                          decoration: const BoxDecoration(color: AppColors.orange, shape: BoxShape.circle),
+                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                         ),
                       )
                     : null,

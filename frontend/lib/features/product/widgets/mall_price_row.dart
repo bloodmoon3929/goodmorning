@@ -43,7 +43,7 @@ class MallPriceRow extends StatelessWidget {
                 o.soldOut ? '—' : won(o.total),
                 style: AppText.bodyStrong.copyWith(fontWeight: FontWeight.w700, color: c),
               ),
-              if (isBest) ...[const SizedBox(height: 3), const Pill('최저', fg: AppColors.orange, bg: AppColors.orangeBg, size: 10)],
+              if (isBest) ...[const SizedBox(height: 3), const Pill('최저', fg: AppColors.primary, bg: AppColors.primaryBg, size: 10)],
             ],
           ),
           const SizedBox(width: 12),

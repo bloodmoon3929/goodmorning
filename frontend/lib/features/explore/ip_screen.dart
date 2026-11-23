@@ -41,7 +41,7 @@ class _IpScreenState extends State<IpScreen> {
             for (final s in [SearchSort.popular, SearchSort.lowest, SearchSort.newest])
               ListTile(
                 title: Text(s.label),
-                trailing: s == vm.sort ? const Icon(Icons.check_rounded, color: AppColors.orange) : null,
+                trailing: s == vm.sort ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
                 onTap: () => Navigator.pop(ctx, s),
               ),
           ],
@@ -142,7 +142,7 @@ class _IpScreenState extends State<IpScreen> {
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: selected ? AppColors.orange : Colors.transparent, width: 2),
+              border: Border.all(color: selected ? AppColors.primary : Colors.transparent, width: 2),
             ),
             child: GoodsThumb(emoji: emoji, bg: bg, size: 54, circle: true, emojiScale: 0.6),
           ),
@@ -153,7 +153,7 @@ class _IpScreenState extends State<IpScreen> {
             overflow: TextOverflow.ellipsis,
             style: AppText.label.copyWith(
               fontSize: 12,
-              color: selected ? AppColors.orange : AppColors.ink,
+              color: selected ? AppColors.primary : AppColors.ink,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

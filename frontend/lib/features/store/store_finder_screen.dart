@@ -66,7 +66,7 @@ class _StoreFinderScreenState extends State<StoreFinderScreen> {
               contentPadding: EdgeInsets.zero,
               leading: const EmojiImage('pin', size: 22),
               title: Text(r, style: AppText.body),
-              trailing: r == vm.region ? const Icon(Icons.check_rounded, color: AppColors.orange) : null,
+              trailing: r == vm.region ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
               onTap: () => Navigator.pop(ctx, r),
             ),
         ],
@@ -133,8 +133,8 @@ class _StoreFinderScreenState extends State<StoreFinderScreen> {
       const SizedBox(height: 10),
       ChipRow(
         children: [
-          AppChip('재고 있는 곳만', selected: vm.inStockOnly, style: ChipStyle.orange, size: 12, onTap: vm.toggleInStock),
-          AppChip('팝업 포함', selected: vm.includePopup, style: ChipStyle.orange, size: 12, onTap: vm.togglePopup),
+          AppChip('재고 있는 곳만', selected: vm.inStockOnly, style: ChipStyle.point, size: 12, onTap: vm.toggleInStock),
+          AppChip('팝업 포함', selected: vm.includePopup, style: ChipStyle.point, size: 12, onTap: vm.togglePopup),
           AppChip('굿즈: 내 IP', size: 12, trailingArrow: true, onTap: () => context.push('/ip-manage')),
         ],
       ),
