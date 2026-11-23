@@ -67,8 +67,9 @@ class RoomViewModel extends ViewModel {
   int variantIndex = 0; // 0 = 가우시안 스플래팅, 1 = SAM 3D (비교)
   RoomStep step = RoomStep.capture;
   final Set<RoomStep> done = {};
-  int turn = 0; // 회전 렌더 번호
+  int turn = 0; // 미리보기 회전 렌더 번호
   int? placed; // 놓은 칸
+  int displayTurn = 0; // 방에 놓은 굿즈가 보이는 방향 (회전 렌더 번호)
   bool showInfo = false;
   WallTone wall = WallTone.pink;
   FloorTone floor = FloorTone.ivory;
@@ -119,7 +120,7 @@ class RoomViewModel extends ViewModel {
     done.clear();
     placed = null;
     showInfo = false;
-    turn = asset.valueOrNull?.frontIndex ?? 0;
+    turn = displayTurn = asset.valueOrNull?.frontIndex ?? 0;
     step = RoomStep.capture;
     notify();
   }
@@ -141,12 +142,24 @@ class RoomViewModel extends ViewModel {
     notify();
   }
 
+  /// 처음 놓을 때는 정면, 칸만 옮길 때는 정해 둔 방향 그대로
   void place(int slot) {
+    if (placed == null) displayTurn = asset.valueOrNull?.frontIndex ?? 0;
     placed = slot;
     showInfo = false;
     done.add(RoomStep.room);
     notify();
   }
+
+  /// 놓은 굿즈의 전시 방향 (방향 정하기 창에서 돌리는 동안 · 정했을 때)
+  void setDisplayTurn(int t) {
+    final v = variant;
+    if (v == null) return;
+    displayTurn = t % v.count;
+    notify();
+  }
+
+  int get displayDegrees => variant == null ? 0 : (displayTurn * 360 / variant!.count).round() % 360;
 
   void toggleInfo() {
     if (placed == null) return;

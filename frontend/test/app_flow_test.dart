@@ -152,7 +152,27 @@ void main() {
     await t.ensureVisible(find.bySemanticsLabel('포치타 인형 배치'));
     await t.tap(find.bySemanticsLabel('포치타 인형 배치'));
     await settle(t, 3);
-    expect(find.text('선반 위 칸에 놓았어요.'), findsOneWidget);
+    expect(find.text('선반 위 칸에 놓았어요 · 0° 방향'), findsOneWidget);
+
+    // 놓은 굿즈를 누르면 360° 돌려 전시 방향 정하기: 취소하면 그대로, 정하면 그 방향으로
+    await t.tap(find.bySemanticsLabel(RegExp('^선반 위 칸에 놓은 굿즈')));
+    await settle(t, 3);
+    expect(find.text('전시 방향 정하기'), findsOneWidget);
+    await t.tap(find.text('뒤 180°'));
+    await settle(t, 2);
+    expect(find.text('선반 위 칸에 놓았어요 · 180° 방향'), findsOneWidget); // 돌리는 동안 방에도 보인다
+    await t.tap(find.text('취소'));
+    await settle(t, 3);
+    expect(find.text('선반 위 칸에 놓았어요 · 0° 방향'), findsOneWidget);
+
+    await t.tap(find.bySemanticsLabel(RegExp('^선반 위 칸에 놓은 굿즈')));
+    await settle(t, 3);
+    await t.tap(find.text('옆 90°'));
+    await settle(t, 2);
+    await t.tap(find.text('이 방향으로 전시 (90°)'));
+    await settle(t, 3);
+    expect(find.text('전시 방향 정하기'), findsNothing);
+    expect(find.text('선반 위 칸에 놓았어요 · 90° 방향'), findsOneWidget);
     await t.ensureVisible(find.text('살구'));
     await t.tap(find.text('살구'));
     await settle(t, 2);

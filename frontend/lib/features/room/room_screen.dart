@@ -10,6 +10,7 @@ import 'room_asset.dart';
 import 'room_view_model.dart';
 import 'widgets/flipbook.dart';
 import 'widgets/mini_room.dart';
+import 'widgets/orientation_sheet.dart';
 import 'widgets/turntable.dart';
 
 /// 내 방 (하단 탭) — UI 시안(시안.html)의 흐름:
@@ -144,7 +145,7 @@ class _RoomScreenState extends State<RoomScreen> {
 
   Widget _stage(RoomAsset a) {
     if (vm.step == RoomStep.room) {
-      return MiniRoom(vm: vm, assetPath: (t) => a.turnOf(vm.variant!, t), dragging: _dragging);
+      return MiniRoom(vm: vm, assetPath: (t) => a.turnOf(vm.variant!, t), dragging: _dragging, onPlacedTap: () => _orient(a));
     }
     final Widget content = switch (vm.step) {
       RoomStep.capture => Flipbook(
@@ -247,7 +248,7 @@ class _RoomScreenState extends State<RoomScreen> {
         ];
       case RoomStep.room:
         return [
-          _status('내 굿즈 방', vm.placed == null ? '벽지 · 바닥 · 선반 색을 고르고 굿즈를 배치해 보세요.' : '놓은 인형을 좌우로 끌면 돌아가고, 누르면 상품 정보가 열려요.'),
+          _status('내 굿즈 방', vm.placed == null ? '벽지 · 바닥 · 선반 색을 고르고 굿즈를 배치해 보세요.' : '놓은 인형을 누르면 360° 돌려 전시 방향을 정할 수 있어요.'),
           const SizedBox(height: 4),
           _variants(a),
           _tray(a),
@@ -258,6 +259,23 @@ class _RoomScreenState extends State<RoomScreen> {
           _buttons(AppButton('굿즈 정보 보기', onPressed: vm.placed == null ? null : vm.toggleInfo), restart: true),
         ];
     }
+  }
+
+  /// 놓은 굿즈 → 전시 방향 정하기 (돌리는 동안 방에 바로 보이고, 취소하면 원래대로)
+  Future<void> _orient(RoomAsset a) async {
+    final before = vm.displayTurn;
+    final v = vm.variant!;
+    final picked = await OrientationSheet.show(
+      context,
+      count: v.count,
+      initial: before,
+      path: (t) => a.turnOf(v, t),
+      onPreview: vm.setDisplayTurn,
+      onInfo: () {
+        if (!vm.showInfo) vm.toggleInfo();
+      },
+    );
+    vm.setDisplayTurn(picked ?? before);
   }
 
   Widget _status(String title, String hint) => Padding(
@@ -365,7 +383,10 @@ class _RoomScreenState extends State<RoomScreen> {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(vm.placed == null ? '인형을 점선 칸으로 끌어 놓으세요. 눌러서 배치할 수도 있어요.' : '${RoomViewModel.slots[vm.placed!].name}에 놓았어요.', style: AppText.caption),
+          child: Text(
+            vm.placed == null ? '인형을 점선 칸으로 끌어 놓으세요. 눌러서 배치할 수도 있어요.' : '${RoomViewModel.slots[vm.placed!].name}에 놓았어요 · ${vm.displayDegrees}° 방향',
+            style: AppText.caption,
+          ),
         ),
       ],
     );
