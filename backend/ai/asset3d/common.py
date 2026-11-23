@@ -39,3 +39,27 @@ def crop(a: np.ndarray, sx: int, sy: int, side: int, fill) -> np.ndarray:
     ax0, ay0, ax1, ay1 = max(sx, 0), max(sy, 0), min(sx + side, w), min(sy + side, h)
     canvas[ay0 - sy : ay1 - sy, ax0 - sx : ax1 - sx] = a[ay0:ay1, ax0:ax1]
     return canvas
+
+
+def largest_cluster(xyz: np.ndarray, opacity: np.ndarray, voxels: int = 64) -> np.ndarray:
+    """진한 가우시안을 격자에 넣어 서로 붙어 있는 덩어리 중 가장 큰 것만 남기는 마스크.
+    카메라 가까이에 생기는 작은 '복사본'(floater 덩어리)을 지운다."""
+    from scipy import ndimage
+
+    dense = opacity > 0.3
+    lo, hi = np.percentile(xyz[dense], 0.5, 0), np.percentile(xyz[dense], 99.5, 0)
+    size = (hi - lo).max() / voxels
+    idx = np.floor((xyz - lo) / size).astype(int)
+    inside = np.all((idx >= 0) & (idx < voxels), axis=1)
+    grid = np.zeros((voxels,) * 3, bool)
+    d = idx[dense & inside]
+    grid[d[:, 0], d[:, 1], d[:, 2]] = True
+    grid = ndimage.binary_dilation(grid)
+    labels, n = ndimage.label(grid)
+    if n <= 1:
+        return inside
+    sizes = ndimage.sum(grid, labels, range(1, n + 1))
+    keep = 1 + int(np.argmax(sizes))
+    out = np.zeros(len(xyz), bool)
+    out[inside] = labels[idx[inside, 0], idx[inside, 1], idx[inside, 2]] == keep
+    return out

@@ -17,6 +17,7 @@ from gsplat import rasterization
 from PIL import Image
 from plyfile import PlyData, PlyElement
 
+from common import largest_cluster
 from train import holdout_ids, load_views, render
 
 
@@ -97,8 +98,11 @@ def main() -> None:
     keep &= torch.sigmoid(p["opacities"]).numpy() > 0.02
     keep &= torch.exp(p["scales"]).amax(-1).numpy() < np.percentile(dist, 95) * 0.25  # 너무 큰 납작한 조각
     p = {k: v[torch.from_numpy(keep)] for k, v in p.items()}
+    # 카메라 가까이에 생기는 작은 복사본(floater 덩어리)을 지우고 가장 큰 덩어리만
+    main_body = torch.from_numpy(largest_cluster(p["means"].numpy(), torch.sigmoid(p["opacities"]).numpy()))
+    p = {k: v[main_body] for k, v in p.items()}
     g = {k: v.to(dev) for k, v in p.items()}
-    print("gaussians", int(keep.sum()), "/", len(keep))
+    print("gaussians", len(p["means"]), "/", len(keep))
 
     # 정리한 뒤 확인용(학습에 안 쓴) 사진 PSNR
     vals = []
@@ -145,7 +149,7 @@ def main() -> None:
         args.ply.parent.mkdir(parents=True, exist_ok=True)
         save_ply(args.ply, p)
     (args.work / "render.json").write_text(
-        json.dumps({"count": args.count, "gaussians": int(keep.sum()), "psnr": psnr, "train_views": ck["train_views"]})
+        json.dumps({"count": args.count, "gaussians": len(p["means"]), "psnr": psnr, "train_views": ck["train_views"]})
     )
     print("rendered", args.count)
 
