@@ -69,7 +69,7 @@ class _PhotoSearchScreenState extends State<PhotoSearchScreen> {
             if (vm.condition.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 6, 16, 0),
-                child: Text('‘${vm.condition}’ 조건을 더해 다시 찾았어요', style: AppText.caption.copyWith(color: AppColors.orange)),
+                child: Text('‘${vm.condition}’ 조건을 더해 다시 찾았어요', style: AppText.caption.copyWith(color: AppColors.primary)),
               ),
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
@@ -87,7 +87,7 @@ class _PhotoSearchScreenState extends State<PhotoSearchScreen> {
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         '점선 안 = 같은 굿즈의 다른 버전',
-                        style: AppText.caption.copyWith(color: AppColors.orange, fontWeight: FontWeight.w500),
+                        style: AppText.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.w500),
                       ),
                     ),
                 ],
@@ -164,7 +164,7 @@ class _PhotoSearchScreenState extends State<PhotoSearchScreen> {
   Widget _group(List<PhotoMatch> g) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     child: CustomPaint(
-      painter: DashedRRectPainter(radius: 14, color: AppColors.orange, dash: 6, gap: 4, strokeWidth: 1.6),
+      painter: DashedRRectPainter(radius: 14, color: AppColors.primary, dash: 6, gap: 4, strokeWidth: 1.6),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(children: [for (final m in g) _row(m, inset: true)]),
@@ -175,7 +175,7 @@ class _PhotoSearchScreenState extends State<PhotoSearchScreen> {
   Widget _row(PhotoMatch m, {bool dim = false, bool inset = false}) => ProductRow(
     item: m.summary,
     dim: dim,
-    chip: Pill(m.variant.label, fg: AppColors.orange, bg: AppColors.orangeBg),
+    chip: Pill(m.variant.label, fg: AppColors.primary, bg: AppColors.primaryBg),
     trailing: Text('유사도 ${m.similarity}%', style: AppText.caption),
     onTap: () => context.push('/product/${m.summary.product.id}?v=${m.variant.id}'),
   );

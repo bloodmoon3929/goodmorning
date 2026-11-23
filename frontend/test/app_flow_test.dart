@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goodmorning/app/app.dart';
+import 'package:goodmorning/components/ip_tile/ip_tile.dart';
 import 'package:goodmorning/core/network/mock_api.dart';
 
 /// 화면 흐름 테스트: 지연 없는 목업 API로 앱을 띄우고 PPT의 주요 동선을 눌러 본다.
@@ -21,8 +22,13 @@ Future<void> start(WidgetTester t) async {
   await settle(t);
 }
 
+/// 표지와 같은 로그인 화면: SNS로 처음 들어오면 IP를 고르고 시작한다
 Future<void> loginAsMember(WidgetTester t) async {
-  await t.tap(find.text('로그인'));
+  await t.tap(find.text('카카오'));
+  await settle(t, 10);
+  await t.tap(find.byType(IpTileGrid).first);
+  await settle(t, 3);
+  await t.tap(find.textContaining('굿모닝 시작하기'));
   await settle(t, 10);
 }
 
@@ -39,11 +45,14 @@ Future<void> loadPretendard() async {
 void main() {
   setUpAll(loadPretendard);
 
-  testWidgets('로그인 없이 둘러보기 → 홈 → 매장 찾기 → 매장 상세', (t) async {
+  testWidgets('로그인 없이 모아보기 → 홈 → 매장 찾기 → 매장 상세', (t) async {
     await start(t);
-    expect(find.text('굿즈 모으는 닝겐'), findsOneWidget);
+    expect(find.text('SNS로 모으러 가기'), findsOneWidget);
+    for (final sns in ['카카오', '네이버', '구글', 'Apple']) {
+      expect(find.text(sns), findsOneWidget);
+    }
 
-    await t.tap(find.text('로그인 없이 둘러보기 ›'));
+    await t.tap(find.text('로그인 없이 모아보기'));
     await settle(t);
     expect(find.text('굿즈 이름, 캐릭터 검색'), findsOneWidget);
 
@@ -105,5 +114,42 @@ void main() {
     await settle(t);
     expect(find.text('변경 저장'), findsOneWidget);
     expect(find.textContaining('마지막 확인: 방금 전'), findsOneWidget);
+  });
+
+  testWidgets('내 방: 촬영 → 윤곽 분리 → 3D 미리보기 → 방에 놓고 상품 정보', (t) async {
+    await start(t);
+    await loginAsMember(t);
+    await t.tap(find.text('내 방').last);
+    await settle(t, 6);
+    expect(find.text('내 굿즈 방'), findsOneWidget);
+    expect(find.textContaining('실제 영상이에요'), findsOneWidget);
+
+    // 촬영 영상이 끝나면 윤곽 분리가 이어서 재생되고, 끝나면 3D 미리보기
+    await t.ensureVisible(find.text('촬영 영상 재생'));
+    await t.tap(find.text('촬영 영상 재생'));
+    for (var i = 0; i < 18; i++) {
+      await t.pump(const Duration(milliseconds: 800));
+    }
+    expect(find.text('3D 에셋 미리보기'), findsOneWidget);
+    expect(find.textContaining('가우시안'), findsWidgets);
+
+    await t.ensureVisible(find.text('에셋을 내 방으로 가져가기'));
+    await t.tap(find.text('에셋을 내 방으로 가져가기'));
+    await settle(t);
+    expect(find.textContaining('끌어 놓으세요'), findsOneWidget);
+    expect(find.text('굿즈 정보 보기'), findsOneWidget);
+
+    // 트레이를 누르면 첫 칸에 놓이고, 정보 보기를 누르면 구매처 안내
+    await t.ensureVisible(find.bySemanticsLabel('포치타 인형 배치'));
+    await t.tap(find.bySemanticsLabel('포치타 인형 배치'));
+    await settle(t, 3);
+    expect(find.text('선반 위 칸에 놓았어요.'), findsOneWidget);
+    await t.ensureVisible(find.text('살구'));
+    await t.tap(find.text('살구'));
+    await settle(t, 2);
+    await t.ensureVisible(find.text('굿즈 정보 보기'));
+    await t.tap(find.text('굿즈 정보 보기'));
+    await settle(t, 3);
+    expect(find.text('등록된 구매처가 없어요.'), findsOneWidget);
   });
 }

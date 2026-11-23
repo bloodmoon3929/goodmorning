@@ -7,8 +7,9 @@ backend/
 ├── docker-compose.yml   # DB + API 로컬 실행
 ├── db/                  # PostgreSQL 17 + PostGIS + pgvector 이미지, 마이그레이션, 개발용 가상 데이터 — db/README.md
 ├── api/                 # Rust API 서버 (Axum + sqlx, MVC) — api/README.md
-├── collector/           # Python 수집기 (쿠팡 파트너스 API, Scrapy + Playwright 크롤링) — collector/README.md
+├── collector/           # Python 수집기 (쿠팡 파트너스 API, Scrapy + Playwright 크롤링, 워커 · 데모 대상) — collector/README.md
 └── ai/                  # Python AI 서버 (EmbeddingGemma 2) — 아직 폴더만
+    └── asset3d/         # 굿즈 360° 영상 → SAM 3 → SfM → 3D 가우시안 스플래팅 → 앱 '내 방' 에셋 — ai/asset3d/README.md
 ```
 
 ## 실행
@@ -35,8 +36,41 @@ cd api && cp .env.example .env && cargo run      # Rust 1.88 이상
 |`goods@example.com`|회원 (굿즈러버, 내 IP 6개 · 찜 · 이동 기록 · 알림이 들어 있음)|
 |`owner.yongsan@example.com`|판매자 — 피규어샵 용산점|
 |`owner.hongdae@example.com`|판매자 — 굿즈샵 홍대점|
-|`admin@example.com`|운영자 (수집 원본 매칭)|
+|`admin@example.com`|운영자 (관리자 페이지 · 수집 원본 매칭)|
 |`reporter1@example.com`, `reporter2@example.com`|회원 (용산점에 검토 대기 제보)|
+
+## 관리자 페이지 — 수집 관리 (`/console/`)
+
+API 서버가 함께 내려주는 운영자용 웹 페이지. [수집 시작]을 누르면 수집기 워커가 실제로 크롤링 · 쇼핑 API 호출을 하고, 단계마다 남긴 기록이 화면에 1초 안팎으로 올라온다 (미리 만든 기록을 흘려보내는 것이 아니다).
+
+```mermaid
+flowchart LR
+    page["관리자 페이지<br/>/console/"] -->|"POST /admin/collect-runs"| run[("ingest.collect_run<br/>queued")]
+    run --> worker["수집기 워커<br/>python -m worker"]
+    worker -->|crawl| scrapy["scrapy crawl mall<br/>robots.txt → 요청 → 파싱"]
+    worker -->|api| coupang["쿠팡 파트너스 클라이언트<br/>HMAC 서명 → GET"]
+    scrapy --> ev[("ingest.collect_event<br/>단계별 기록")]
+    coupang --> ev
+    scrapy --> raw[("ingest.raw_listing")]
+    coupang --> raw
+    ev -->|"GET /admin/collect-runs/{id}?after="| page
+    raw -->|"연결(매칭) → online.offer"| page
+```
+
+```bash
+# 1) DB + API (위 '실행')   2) 수집기 워커 (실제 몰 · 실제 공개 API)
+cd backend/collector && uv sync && uv run playwright install chromium
+DATABASE_URL=postgres://goodmorning:goodmorning@localhost:5432/goodmorning uv run python -m worker
+# 3) http://localhost:8080/console/ — admin@example.com / goodmorning1234
+#    또는 GitHub Pages(https://bloodmoon3929.github.io/goodmorning/)에서 API 서버 주소 http://localhost:8080 을 적고 로그인
+```
+
+- 화면: 몰 목록(수집 허용 켜고 끄기) · 수집 시작(크롤링 / 쇼핑 API, 몰 · 검색어 · 검색어 수) · 최근 실행 · 단계 표시(대상 확인 → robots.txt → 페이지 요청 → 응답 → 파싱 → DB 저장 → 끝, API는 서명 → 요청 → 응답 → 저장) · 진행 기록 · 요청 · 응답 자세히(robots.txt 본문, 파싱한 상품 표, 서명한 문자열 · Authorization 헤더, API 응답 JSON) · 이번 실행에서 모은 상품(매칭 후보 → 연결 · 제외)
+- 수집 대상 (실제): 크롤링은 robots.txt · 이용약관을 확인한 반다이남코코리아몰 · 포켓몬스토어 · 대원샵 · 텐바이텐, 쇼핑 API는 치이카와 마켓의 공개 상품 JSON(키 없음, 엔화는 ECB 기준 환율로 원화). 쿠팡 파트너스는 키가 생기면 같은 화면에서 고른다. 확인 내용과 결과는 [collector/README.md](collector/README.md#실제-수집-대상-2026-11-23-확인)
+- 인터넷 없이 시험할 때만 `python -m demo` (이 PC 안 가상 몰 2곳 + 쿠팡 형식 테스트 서버)
+- GitHub Pages에 올린 관리자 페이지는 정적 파일이라, 데이터는 이 PC에서 띄운 API 서버에서 받는다 (API가 CORS · Chrome 사설망 접근을 허용). Chrome이 "로컬 네트워크 접근"을 물으면 허용
+- 매칭으로 연결한 가격은 API(`GET /products/{id}`)의 몰별 가격에 들어간다. Flutter 앱은 아직 목업 API를 써서 앱 화면에는 바로 나오지 않는다.
+- 파일: `api/console/` (HTML · JS · CSS를 바이너리에 넣는다, 빌드 단계 없음)
 
 ## 테스트
 
@@ -44,8 +78,8 @@ cd api && cp .env.example .env && cargo run      # Rust 1.88 이상
 
 ```bash
 export DATABASE_URL=postgres://goodmorning:goodmorning@localhost:5432/goodmorning
-cd api && cargo test                                    # 단위 11개 + API 통합 10개 (DATABASE_URL이 없으면 통합은 건너뜀)
-cd collector && uv sync && uv run pytest                # 29개 (DB · Playwright가 없으면 그 테스트는 건너뜀)
+cd api && cargo test                                    # 단위 12개 + API 통합 11개 (DATABASE_URL이 없으면 통합은 건너뜀)
+cd collector && uv sync && uv run pytest                # 50개 (DB · Playwright가 없으면 그 테스트는 건너뜀, 외부 사이트에는 요청하지 않음)
 ```
 
 ## 응답 규칙
@@ -117,10 +151,18 @@ cd collector && uv sync && uv run pytest                # 29개 (DB · Playwrigh
 |판매자 센터 · 상품 등록|사진 → AI 후보 3개|—|—|AI 서버가 생기면 연결|embedding|
 |판매자 센터 · 상품 등록|후보 선택 → 취급 상품 추가|PUT|`/seller/stores/{store_id}/stock`|처음 보는 버전도 같은 API로 추가|W stock|
 |판매자 센터 · 상품 등록|후보에 없음 → 새 굿즈 요청|POST|`/seller/stores/{store_id}/product-requests`|관리자 검토 대기|W product_request|
-|운영|매칭 대기 목록|GET|`/admin/raw-listings?state=pending`|수집기가 넣은 원본|R raw_listing|
+|운영|매칭 대기 목록|GET|`/admin/raw-listings?state=pending`|수집기가 넣은 원본. `?run_id=`면 그 수집 실행에서 모은 것 전부|R raw_listing|
+|관리자 페이지|매칭 후보|GET|`/admin/raw-listings/{id}/candidates`|수집할 때 쓴 검색어의 버전을 맨 앞에, 나머지는 제목 낱말이 많이 겹치는 순 5개|R raw_listing, variant, product, ip|
 |운영|매칭 확정|POST|`/admin/raw-listings/{id}/match`|`{"variant_id"}` → online.offer 반영 + 가격 기록|W offer, offer_history, raw_listing|
 |운영|제외|POST|`/admin/raw-listings/{id}/reject`||W raw_listing|
 |운영|수집 실행 기록|GET|`/admin/collect-jobs`|배치 모니터링|R collect_job|
+|관리자 페이지|몰 목록|GET|`/admin/malls`|수집 허용 여부, 판매처 · 수집 원본 수|R mall, offer, raw_listing|
+|관리자 페이지|수집 허용 켜기 · 끄기|PATCH|`/admin/malls/{id}`|`{"crawl_allowed"}` · `{"is_active"}` — robots.txt · 약관을 확인한 운영자가 켠다|W mall|
+|관리자 페이지|수집 시작|POST|`/admin/collect-runs`|`{"kind": "crawl"\|"api", "provider"?, "mall"?, "keyword"?, "max_queries"?}` → 201 `{id}`. 대기열에 넣기만 하고 실행은 수집기 워커. 검색어 수 1~10. API는 `provider`: `coupang`(키 필요) · `chiikawa_market`(공개 상품 JSON, 검색어 필수)|W collect_run|
+|관리자 페이지|최근 실행|GET|`/admin/collect-runs`||R collect_run|
+|관리자 페이지|실행 진행|GET|`/admin/collect-runs/{id}?after=`|상태 + `after` 번호 뒤의 새 단계 기록 + 몰별 작업. 페이지가 실행 중에 0.8초마다 부른다|R collect_run, collect_event, collect_job|
+|관리자 페이지|수집기 연결 상태|GET|`/admin/collector`|워커가 10초 안에 신호를 남겼는지, 대기 · 실행 중 수|R collect_worker, collect_run|
+|관리자 페이지|페이지 파일|GET|`/console/`|HTML · JS · CSS · 로고 (로그인은 페이지 안에서)|—|
 |—|상태 확인|GET|`/health`|DB 연결 확인|—|
 
 `/seller/stores/{store_id}/…`는 그 매장에 연결된 판매자(`account.seller_member`)나 운영자만 부를 수 있다 (`api/src/middleware/seller.rs`). `/admin/…`은 운영자만.
@@ -131,6 +173,7 @@ cd collector && uv sync && uv run pytest                # 29개 (DB · Playwrigh
 
 |작업|주기|담당|동작|상태|
 |--|--|--|--|--|
+|관리자 페이지에서 시작한 수집|누를 때|collector `python -m worker`|collect_run 대기열을 2초마다 확인 → 크롤링 · 쇼핑 API를 따로 실행 → collect_event · raw_listing|구현함 (실제 몰 4곳 · 치이카와 마켓 공개 API로 확인)|
 |쇼핑 API 수집|하루 1~2회|collector `python -m api_clients coupang --catalog`|카탈로그 버전마다 검색어 → 쿠팡 파트너스 검색 → raw_listing, 실행마다 collect_job|구현함|
 |크롤링|하루 1~2회|collector `scrapy crawl mall`|`crawl_allowed` 몰의 검색 결과 페이지 → raw_listing, 몰마다 collect_job|구현함|
 |매칭된 판매처 가격 갱신|수집할 때마다|collector `db.save_listing`|이미 offer로 연결된 몰 · 주소면 가격 · 품절을 바로 갱신, 바뀌면 offer_history. 가격을 못 읽으면 이전 값 유지|구현함|

@@ -77,7 +77,7 @@ class _IssueFormState extends State<_IssueForm> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [for (final t in IssueViewModel.types) AppChip(t, selected: vm.type == t, style: ChipStyle.orange, onTap: () => vm.setType(t))],
+            children: [for (final t in IssueViewModel.types) AppChip(t, selected: vm.type == t, style: ChipStyle.point, onTap: () => vm.setType(t))],
           ),
           const SizedBox(height: 14),
           TextField(

@@ -1,0 +1,25 @@
+# 데모 수집 대상 (uv run python -m demo 가 127.0.0.1에 띄우는 가상 몰). 실제 몰 설정은 sites.toml.
+# 몰 이름은 online.mall.name과 같다 (dev_seed.sql에 crawl_allowed = true로 들어 있음).
+
+[[site]]
+mall = "데모 몰 A (정적 HTML)"
+search_url = "http://127.0.0.1:8091/search?q={query}"
+js = false
+item = "li.product"
+title = ".name::text"
+price = ".price::text"
+shipping = ".shipping::text"
+image = "img::attr(src)"
+link = "a::attr(href)"
+sold_out = ".soldout"
+
+# 목록을 자바스크립트로 그린다 → Playwright(Chromium)로 연다
+[[site]]
+mall = "데모 몰 B (자바스크립트)"
+search_url = "http://127.0.0.1:8092/search?keyword={query}"
+js = true
+item = "div.goods-card"
+title = ".goods-name::text"
+price = ".goods-price::text"
+shipping = ".goods-ship::text"
+link = "a::attr(href)"

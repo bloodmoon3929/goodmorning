@@ -70,7 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
             for (final o in options)
               ListTile(
                 title: Text(label(o), style: AppText.body),
-                trailing: o == current ? const Icon(Icons.check_rounded, color: AppColors.orange) : null,
+                trailing: o == current ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
                 onTap: () => Navigator.pop(ctx, o),
               ),
             const SizedBox(height: 8),
@@ -135,10 +135,10 @@ class _SearchScreenState extends State<SearchScreen> {
         Container(
           margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(color: AppColors.orangeBg, borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: AppColors.primaryBg, borderRadius: BorderRadius.circular(10)),
           child: Text(
             '‘${r!.alias!.$1}’를 ‘${r.alias!.$2}’로 함께 찾았어요',
-            style: AppText.label.copyWith(color: AppColors.orange, fontWeight: FontWeight.w600),
+            style: AppText.label.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
           ),
         ),
       const Padding(padding: EdgeInsets.fromLTRB(16, 12, 16, 10), child: ChannelFilter()),
@@ -185,7 +185,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             dense: true,
-            leading: Text('${i + 1}', style: AppText.bodyStrong.copyWith(color: AppColors.orange)),
+            leading: Text('${i + 1}', style: AppText.bodyStrong.copyWith(color: AppColors.primary)),
             title: Text(t, style: AppText.body),
             onTap: () => _setText(t),
           ),

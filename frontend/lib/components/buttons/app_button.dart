@@ -5,7 +5,7 @@ import '../emoji/emoji_image.dart';
 
 enum AppButtonKind { primary, secondary, dark, soft }
 
-/// 버튼: 주요 행동(주황) · 보조 행동(테두리) · 누를 수 없음(회색, onPressed 없음).
+/// 버튼: 주요 행동(남색) · 보조 행동(테두리) · 누를 수 없음(회색, onPressed 없음).
 class AppButton extends StatelessWidget {
   const AppButton(
     this.label, {
@@ -38,10 +38,10 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !busy;
     final (bg, fg, border) = switch (kind) {
-      AppButtonKind.primary => (AppColors.orange, AppColors.white, null),
+      AppButtonKind.primary => (AppColors.primary, AppColors.white, null),
       AppButtonKind.secondary => (AppColors.white, AppColors.ink, AppColors.line),
       AppButtonKind.dark => (AppColors.ink, AppColors.white, null),
-      AppButtonKind.soft => (AppColors.orangeBg, AppColors.orange, null),
+      AppButtonKind.soft => (AppColors.primaryBg, AppColors.primary, null),
     };
     final background = !enabled && !busy ? AppColors.bg : (color ?? bg);
     final foreground = !enabled && !busy ? const Color(0xFFB0B5BD) : (textColor ?? fg);

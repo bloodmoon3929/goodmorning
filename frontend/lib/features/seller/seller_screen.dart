@@ -78,7 +78,7 @@ class _SellerScreenState extends State<SellerScreen> with SingleTickerProviderSt
               unselectedLabelColor: AppColors.sub,
               labelStyle: AppText.bodyStrong.copyWith(fontWeight: FontWeight.w700),
               unselectedLabelStyle: AppText.body.copyWith(fontWeight: FontWeight.w500),
-              indicatorColor: AppColors.orange,
+              indicatorColor: AppColors.primary,
               indicatorSize: TabBarIndicatorSize.label,
               dividerColor: AppColors.line,
               tabs: [
@@ -197,7 +197,7 @@ class _SellerScreenState extends State<SellerScreen> with SingleTickerProviderSt
                 Row(
                   children: [
                     Text(it.variant.label, style: AppText.caption),
-                    if (changed) ...[const SizedBox(width: 6), const Pill('변경', fg: AppColors.orange, bg: AppColors.orangeBg, size: 10)],
+                    if (changed) ...[const SizedBox(width: 6), const Pill('변경', fg: AppColors.primary, bg: AppColors.primaryBg, size: 10)],
                   ],
                 ),
               ],
@@ -330,10 +330,10 @@ class _SellerScreenState extends State<SellerScreen> with SingleTickerProviderSt
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: on ? AppColors.orangeBg : AppColors.white,
+        color: on ? AppColors.primaryBg : AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: on ? AppColors.orange : AppColors.line, width: on ? 2 : 1),
+          side: BorderSide(color: on ? AppColors.primary : AppColors.line, width: on ? 2 : 1),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -342,7 +342,7 @@ class _SellerScreenState extends State<SellerScreen> with SingleTickerProviderSt
             padding: const EdgeInsets.all(8),
             child: Row(
               children: [
-                Icon(on ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded, color: on ? AppColors.orange : AppColors.line),
+                Icon(on ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded, color: on ? AppColors.primary : AppColors.line),
                 const SizedBox(width: 8),
                 GoodsThumb(emoji: c.product.emoji, bg: c.product.bg, size: 44, radius: 10),
                 const SizedBox(width: 10),
@@ -352,11 +352,11 @@ class _SellerScreenState extends State<SellerScreen> with SingleTickerProviderSt
                     children: [
                       Text(c.product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodyStrong),
                       const SizedBox(height: 4),
-                      Pill(c.variant.label, fg: AppColors.orange, bg: on ? AppColors.white : AppColors.orangeBg, size: 10),
+                      Pill(c.variant.label, fg: AppColors.primary, bg: on ? AppColors.white : AppColors.primaryBg, size: 10),
                     ],
                   ),
                 ),
-                Text('${c.similarity}%', style: AppText.section.copyWith(color: on ? AppColors.orange : AppColors.sub)),
+                Text('${c.similarity}%', style: AppText.section.copyWith(color: on ? AppColors.primary : AppColors.sub)),
                 const SizedBox(width: 6),
               ],
             ),
@@ -459,7 +459,7 @@ class _Step extends StatelessWidget {
           width: 24,
           height: 24,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(color: AppColors.orange, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
           child: Text(
             '$n',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.white),

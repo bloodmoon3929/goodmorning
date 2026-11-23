@@ -34,6 +34,19 @@ def get_or_create_mall(conn: psycopg.Connection, name: str, site_url: str, sourc
     return row["id"]
 
 
+def sync_sites(conn: psycopg.Connection, sites: list) -> int:
+    """크롤링 설정의 몰이 DB에 없으면 만든다. robots.txt · 약관 확인 기록(reviewed)이 있으면 수집 허용으로.
+    이미 있는 몰은 건드리지 않는다 (관리자 페이지에서 끈 것을 되돌리지 않게). 새로 만든 수를 돌려준다."""
+    made = 0
+    for s in sites:
+        row = conn.execute(
+            "INSERT INTO online.mall (name, site_url, source, crawl_allowed) VALUES (%s, %s, 'crawl', %s) ON CONFLICT (name) DO NOTHING RETURNING id",
+            (s.mall, s.site_url, bool(s.reviewed)),
+        ).fetchone()
+        made += row is not None
+    return made
+
+
 def mall_id_by_name(conn: psycopg.Connection, name: str) -> int | None:
     row = conn.execute("SELECT id FROM online.mall WHERE name = %s", (name,)).fetchone()
     return row["id"] if row else None
@@ -66,8 +79,10 @@ def catalog_queries(conn: psycopg.Connection, limit: int | None = None) -> list[
     return out[:limit] if limit else out
 
 
-def start_job(conn: psycopg.Connection, mall_id: int | None, kind: str) -> int:
-    row = conn.execute("INSERT INTO ingest.collect_job (mall_id, kind) VALUES (%s, %s) RETURNING id", (mall_id, kind)).fetchone()
+def start_job(conn: psycopg.Connection, mall_id: int | None, kind: str, run_id: int | None = None) -> int:
+    row = conn.execute(
+        "INSERT INTO ingest.collect_job (mall_id, kind, run_id) VALUES (%s, %s, %s) RETURNING id", (mall_id, kind, run_id)
+    ).fetchone()
     return row["id"]
 
 
@@ -84,13 +99,15 @@ class SaveResult:
     # 이미 매칭된 판매처라 online.offer를 갱신했는지
     offer_id: int | None
     price_changed: bool
+    # 갱신 전 가격 (관리자 페이지 기록용)
+    old_price: int | None = None
 
 
-def save_listing(conn: psycopg.Connection, mall_id: int, item: Listing) -> SaveResult:
+def save_listing(conn: psycopg.Connection, mall_id: int, item: Listing, job_id: int | None = None) -> SaveResult:
     with conn.transaction():
         raw_id = conn.execute(
-            "INSERT INTO ingest.raw_listing (mall_id, source, source_url, title, price, shipping_fee, image_url, payload, collected_at) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            "INSERT INTO ingest.raw_listing (mall_id, source, source_url, title, price, shipping_fee, image_url, payload, collected_at, job_id) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 mall_id,
                 item.source,
@@ -101,6 +118,7 @@ def save_listing(conn: psycopg.Connection, mall_id: int, item: Listing) -> SaveR
                 item.image_url,
                 Jsonb(item.payload()),
                 item.collected_at,
+                job_id,
             ),
         ).fetchone()["id"]
 
@@ -130,4 +148,40 @@ def save_listing(conn: psycopg.Connection, mall_id: int, item: Listing) -> SaveR
             "UPDATE ingest.raw_listing SET match_state = 'matched', matched_variant_id = %s WHERE id = %s",
             (offer["variant_id"], raw_id),
         )
-        return SaveResult(raw_id, offer["id"], changed)
+        return SaveResult(raw_id, offer["id"], changed, offer["price"])
+
+
+# ------------------------------------------------------------ 관리자 페이지에서 시작한 실행 (워커)
+
+
+def claim_run(conn: psycopg.Connection) -> dict | None:
+    """대기 중인 실행 하나를 가져가며 running으로 바꾼다 (워커가 여럿이어도 한 번만)"""
+    return conn.execute(
+        "UPDATE ingest.collect_run SET status = 'running', started_at = now() "
+        "WHERE id = (SELECT id FROM ingest.collect_run WHERE status = 'queued' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) "
+        "RETURNING id, kind, params"
+    ).fetchone()
+
+
+def run_item_count(conn: psycopg.Connection, run_id: int) -> int:
+    row = conn.execute(
+        "SELECT count(*) AS n FROM ingest.raw_listing r JOIN ingest.collect_job j ON j.id = r.job_id WHERE j.run_id = %s", (run_id,)
+    ).fetchone()
+    return row["n"]
+
+
+def finish_run(conn: psycopg.Connection, run_id: int, error: str | None) -> int:
+    count = run_item_count(conn, run_id)
+    conn.execute(
+        "UPDATE ingest.collect_run SET status = %s, item_count = %s, error = %s, finished_at = now() WHERE id = %s",
+        ("failed" if error else "success", count, error, run_id),
+    )
+    return count
+
+
+def heartbeat(conn: psycopg.Connection, name: str, pid: int) -> None:
+    conn.execute(
+        "INSERT INTO ingest.collect_worker (name, pid, seen_at) VALUES (%s, %s, now()) "
+        "ON CONFLICT (name) DO UPDATE SET pid = EXCLUDED.pid, seen_at = now()",
+        (name, pid),
+    )

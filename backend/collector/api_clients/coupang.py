@@ -12,7 +12,9 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import quote, urlencode
@@ -35,20 +37,31 @@ def signed_date(now: datetime | None = None) -> str:
     return (now or datetime.now(UTC)).astimezone(UTC).strftime("%y%m%dT%H%M%SZ")
 
 
-def authorization(method: str, path_with_query: str, access_key: str, secret_key: str, now: datetime | None = None) -> str:
+def sign_message(method: str, path_with_query: str, date: str) -> str:
+    """서명할 문자열 = signed-date + 메서드 + 경로 + 쿼리(물음표 제외)"""
     path, _, query = path_with_query.partition("?")
+    return f"{date}{method}{path}{query}"
+
+
+def authorization(method: str, path_with_query: str, access_key: str, secret_key: str, now: datetime | None = None) -> str:
     date = signed_date(now)
-    message = f"{date}{method}{path}{query}"
+    message = sign_message(method, path_with_query, date)
     signature = hmac.new(secret_key.encode("utf-8"), message.encode("utf-8"), hashlib.sha256).hexdigest()
     return f"CEA algorithm=HmacSHA256, access-key={access_key}, signed-date={date}, signature={signature}"
 
 
-def product_url(product_id: Any) -> str:
+def product_url(product_id: Any, base: str = MALL_SITE) -> str:
     """같은 상품을 한 줄로 묶는 기준 주소 (파트너스 링크는 호출마다 추적값이 달라질 수 있어 payload에 따로 둔다)"""
-    return f"{MALL_SITE}/vp/products/{product_id}"
+    return f"{base}/vp/products/{product_id}"
 
 
-def parse_search(body: dict[str, Any], query: str | None = None, query_variant_id: int | None = None) -> list[Listing]:
+def parse_search(
+    body: dict[str, Any],
+    query: str | None = None,
+    query_variant_id: int | None = None,
+    mall_name: str = MALL_NAME,
+    product_base: str = MALL_SITE,
+) -> list[Listing]:
     if str(body.get("rCode", "0")) != "0":
         raise CoupangError(f"쿠팡 API 오류 {body.get('rCode')}: {body.get('rMessage')}")
     data = body.get("data") or {}
@@ -61,9 +74,9 @@ def parse_search(body: dict[str, Any], query: str | None = None, query_variant_i
         price = p.get("productPrice")
         out.append(
             Listing(
-                mall_name=MALL_NAME,
+                mall_name=mall_name,
                 source="api",
-                source_url=product_url(pid),
+                source_url=product_url(pid, product_base),
                 title=p.get("productName"),
                 price=int(price) if price is not None else None,
                 # 무료배송이 아니면 배송비를 응답에서 알 수 없다
@@ -84,12 +97,17 @@ def parse_search(body: dict[str, Any], query: str | None = None, query_variant_i
     return out
 
 
+# 단계별 기록을 받을 함수 (step, message, **data) — 관리자 페이지 실행에서 events.RunLog.emit
+EventHook = Callable[..., None]
+
+
 class CoupangClient:
-    def __init__(self, config: CoupangConfig, http: httpx.Client | None = None):
+    def __init__(self, config: CoupangConfig, http: httpx.Client | None = None, on_event: EventHook | None = None):
         self.config = config
         self.http = http or httpx.Client(timeout=10.0)
         self.calls = 0
         self._last_call = 0.0
+        self.on_event = on_event or (lambda *a, **k: None)
 
     def search(self, keyword: str, limit: int = 10, query_variant_id: int | None = None) -> list[Listing]:
         if self.calls >= self.config.max_calls:
@@ -103,13 +121,34 @@ class CoupangClient:
             params["subId"] = self.config.sub_id
         # 서명한 쿼리와 보내는 쿼리가 글자까지 같아야 한다 (공백은 %20)
         path_with_query = f"{self.config.search_path}?{urlencode(params, quote_via=quote)}"
-        headers = {
-            "Authorization": authorization("GET", path_with_query, self.config.access_key, self.config.secret_key),
-            "Content-Type": "application/json;charset=UTF-8",
-        }
+        now = datetime.now(UTC)
+        auth = authorization("GET", path_with_query, self.config.access_key, self.config.secret_key, now)
+        headers = {"Authorization": auth, "Content-Type": "application/json;charset=UTF-8"}
+        self.on_event(
+            "sign",
+            "HMAC-SHA256 서명 (시크릿 키는 보내지 않고 서명만 보냄)",
+            signed=sign_message("GET", path_with_query, signed_date(now)),
+            authorization=auth,
+        )
         self.calls += 1
         self._last_call = time.monotonic()
-        res = self.http.get(self.config.domain + path_with_query, headers=headers)
+        url = self.config.domain + path_with_query
+        self.on_event("api_request", f"GET {url}", url=url, keyword=keyword, call=self.calls, max_calls=self.config.max_calls)
+        started = time.monotonic()
+        res = self.http.get(url, headers=headers)
+        ms = round((time.monotonic() - started) * 1000)
         if res.status_code != 200:
+            self.on_event("api_response", f"HTTP {res.status_code} · {ms}ms", level="error", status=res.status_code, body=res.text[:400])
             raise CoupangError(f"쿠팡 API HTTP {res.status_code}: {res.text[:200]}")
-        return parse_search(res.json(), query=keyword, query_variant_id=query_variant_id)
+        body = res.json()
+        items = parse_search(
+            body, query=keyword, query_variant_id=query_variant_id, mall_name=self.config.mall_name, product_base=self.config.product_base
+        )
+        self.on_event(
+            "api_response",
+            f"HTTP 200 · {ms}ms · 상품 {len(items)}개",
+            status=200,
+            ms=ms,
+            body=json.dumps(body, ensure_ascii=False, indent=1)[:1500],
+        )
+        return items

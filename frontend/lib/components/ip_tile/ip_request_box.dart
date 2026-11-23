@@ -59,10 +59,10 @@ class IpRequestBox extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.orangeBg, borderRadius: BorderRadius.circular(99)),
+              decoration: BoxDecoration(color: AppColors.primaryBg, borderRadius: BorderRadius.circular(99)),
               child: const Text(
                 '추가 요청 +',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.orange),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
               ),
             ),
           ],

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>굿모닝 관리자 · 수집 관리</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <img src="logo.png" alt="굿즈 모으는 닝겐들" class="logo">
+  <div class="title"><strong>관리자</strong><span>수집 관리 · 크롤링 · 쇼핑 API</span></div>
+  <div id="collector" class="pill off" role="status">수집기 확인 중…</div>
+  <a id="appLink" class="ghost" href="app/" hidden>Flutter 앱 ›</a>
+  <button id="logout" class="ghost" hidden>로그아웃</button>
+</header>
+
+<section id="login" class="login" hidden>
+  <form id="loginForm" class="card">
+    <h1>운영자 로그인</h1>
+    <label id="apiBox" hidden>API 서버 <input id="apiBase" type="url" value="http://localhost:8080" required></label>
+    <p id="apiHint" class="hint" hidden>이 페이지는 GitHub Pages에 있고, 데이터는 이 PC에서 띄운 API 서버에서 받습니다 (backend/README.md의 실행 · 수집기 워커). Chrome이 "로컬 네트워크 접근"을 물으면 허용하세요.</p>
+    <label>이메일 <input id="email" type="email" autocomplete="username" value="admin@example.com" required></label>
+    <label>비밀번호 <input id="password" type="password" autocomplete="current-password" required></label>
+    <button class="primary" type="submit">로그인</button>
+    <p class="hint">개발용 가상 데이터의 운영자 계정: admin@example.com / goodmorning1234</p>
+    <p id="loginError" class="error" role="alert"></p>
+  </form>
+</section>
+
+<main id="app" class="layout" hidden>
+  <aside class="side">
+    <section class="card">
+      <h2>수집 시작</h2>
+      <div class="tabs" role="tablist">
+        <button role="tab" data-kind="crawl" class="on" aria-selected="true">크롤링</button>
+        <button role="tab" data-kind="api" aria-selected="false">쇼핑 API</button>
+      </div>
+      <form id="runForm">
+        <label class="crawl-only">몰
+          <select id="mall"><option value="">수집 허용된 몰 전체</option></select>
+        </label>
+        <label class="api-only" hidden>API
+          <select id="provider">
+            <option value="chiikawa_market">치이카와 마켓 — 공개 상품 JSON (키 없음, 실제 호출)</option>
+            <option value="coupang">쿠팡 파트너스 (Access · Secret 키 필요)</option>
+          </select>
+        </label>
+        <label>검색어 <input id="keyword" placeholder="비우면 카탈로그 상품명으로 검색"></label>
+        <label>검색어 수 <input id="maxQueries" type="number" min="1" max="10" value="3"></label>
+        <p class="hint crawl-only">robots.txt를 먼저 받고, 막힌 주소는 요청하지 않습니다. 몰마다 요청 사이 3초 안팎.</p>
+        <p class="hint api-only" hidden id="apiDesc">치이카와 마켓(일본 공식몰)의 공개 상품 목록을 2초 간격으로 받아 검색어로 거릅니다. 상품 이름이 일본어라 검색어도 일본어로 (예: マスコット, ハチワレ). 엔화는 ECB 기준 환율로 원화로 바꿔 저장.</p>
+        <button class="primary" type="submit">수집 시작</button>
+        <p id="runError" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>몰 <small>수집 허용은 robots.txt · 약관을 확인한 뒤 켠다</small></h2>
+      <ul id="malls" class="malls"></ul>
+    </section>
+
+    <section class="card">
+      <h2>최근 실행</h2>
+      <ul id="runs" class="runs"></ul>
+    </section>
+  </aside>
+
+  <section class="main">
+    <div id="empty" class="card empty">
+      <h2>왼쪽에서 [수집 시작]을 누르세요</h2>
+      <p>수집기 워커가 실제로 크롤링(Scrapy + Playwright) · 쇼핑 API 호출을 하고, 단계마다 남긴 기록이 여기에 실시간으로 보입니다.</p>
+    </div>
+
+    <div id="detail" hidden>
+      <div class="card runhead">
+        <div>
+          <h2 id="runTitle"></h2>
+          <p id="runMeta" class="meta"></p>
+        </div>
+        <span id="runStatus" class="badge"></span>
+      </div>
+
+      <ol id="pipeline" class="pipeline"></ol>
+
+      <div class="split">
+        <section class="card">
+          <h3>진행 기록 <small>줄을 누르면 오른쪽에 요청 · 응답이 보여요</small></h3>
+          <ol id="events" class="events"></ol>
+        </section>
+        <section class="card">
+          <h3>요청 · 응답 자세히</h3>
+          <div id="inspect" class="inspect"><p class="hint">기록을 고르세요.</p></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <h3>이번 실행에서 모은 상품 <small>새 주소는 매칭 대기 → 카탈로그 버전에 연결하면 상품 API의 몰별 가격(online.offer)에 들어갑니다</small></h3>
+        <table class="results">
+          <thead><tr><th>번호</th><th>몰</th><th>상품 이름</th><th>가격</th><th>배송비</th><th>상태</th><th></th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+        <div id="matchBox" class="matchbox" hidden></div>
+      </section>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

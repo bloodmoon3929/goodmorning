@@ -1,0 +1,29 @@
+{
+ "id": "pochita",
+ "name": "포치타 인형",
+ "source": "20261123_091242.mp4",
+ "video": {
+  "seconds": 15.8,
+  "fps": 120,
+  "frames": 1900
+ },
+ "capture": {
+  "count": 36
+ },
+ "segment": {
+  "count": 36,
+  "model": "SAM 3",
+  "prompt": "plush toy"
+ },
+ "turntable": {
+  "count": 72,
+  "front": 0
+ },
+ "recon": {
+  "method": "3D 가우시안 스플래팅 (gsplat)",
+  "poses": "COLMAP SfM · ALIKED + LightGlue 매칭",
+  "views": 140,
+  "gaussians": 154045,
+  "psnr": 16.87
+ }
+}

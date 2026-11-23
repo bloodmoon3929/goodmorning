@@ -159,7 +159,7 @@ class VisitCard extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text('문의를 보냈어요. 답변이 오면 알려 드려요'),
-                            action: SnackBarAction(label: '문의 내역', textColor: AppColors.orange, onPressed: () => context.go('/my/list/inquiries')),
+                            action: SnackBarAction(label: '문의 내역', textColor: AppColors.primary, onPressed: () => context.go('/my/list/inquiries')),
                           ),
                         );
                       }

@@ -21,7 +21,7 @@ class StoreListCard extends StatelessWidget {
       color: AppColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: highlight ? AppColors.orange : AppColors.line, width: highlight ? 1.5 : 1),
+        side: BorderSide(color: highlight ? AppColors.primary : AppColors.line, width: highlight ? 1.5 : 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -37,7 +37,7 @@ class StoreListCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   Text(s.name, style: AppText.section.copyWith(fontSize: 15)),
-                  Pill(s.kind, fg: s.isPopup ? AppColors.orange : AppColors.sub, bg: s.isPopup ? AppColors.orangeBg : AppColors.bg, size: 10),
+                  Pill(s.kind, fg: s.isPopup ? AppColors.primary : AppColors.sub, bg: s.isPopup ? AppColors.primaryBg : AppColors.bg, size: 10),
                   if (s.popupEnds != null) Pill(s.popupEnds!, fg: AppColors.red, bg: AppColors.redBg, size: 10),
                 ],
               ),

@@ -100,7 +100,7 @@ class _IpManageScreenState extends State<IpManageScreen> {
                                       onPressed: () => vm.toggle(ip.id),
                                       icon: const CircleAvatar(
                                         radius: 11,
-                                        backgroundColor: AppColors.orange,
+                                        backgroundColor: AppColors.primary,
                                         child: Icon(Icons.check_rounded, size: 15, color: AppColors.white),
                                       ),
                                     ),

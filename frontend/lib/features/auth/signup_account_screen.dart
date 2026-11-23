@@ -43,8 +43,8 @@ class _SignupAccountScreenState extends State<SignupAccountScreen> {
             height: 22,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: on ? AppColors.orange : AppColors.white,
-              border: Border.all(color: on ? AppColors.orange : AppColors.line, width: 1.5),
+              color: on ? AppColors.primary : AppColors.white,
+              border: Border.all(color: on ? AppColors.primary : AppColors.line, width: 1.5),
             ),
             child: Icon(Icons.check_rounded, size: 15, color: on ? AppColors.white : AppColors.line),
           ),

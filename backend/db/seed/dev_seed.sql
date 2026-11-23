@@ -27,6 +27,7 @@ FROM (VALUES
     ('치이카와', '먼작귀'),
     ('치이카와', '먼가 작고 귀여운 녀석'),
     ('치이카와', 'chiikawa'),
+    ('치이카와', 'ちいかわ'),
     ('포켓몬스터', '포켓몬'),
     ('기동전사 건담', '건담'),
     ('기동전사 건담', '건프라'),
@@ -152,7 +153,10 @@ INSERT INTO online.mall (name, site_url, source, api_name, crawl_allowed) VALUES
     ('오픈마켓 B', 'https://mall-b.example', 'api', '가상 API', false),
     ('공식 온라인몰', 'https://official.example', 'crawl', NULL, false),
     ('굿즈 전문몰 C', 'https://mall-c.example', 'crawl', NULL, false),
-    ('캐릭터 전문몰 D', 'https://mall-d.example', 'crawl', NULL, false);
+    ('캐릭터 전문몰 D', 'https://mall-d.example', 'crawl', NULL, false),
+    -- 수집기 데모 사이트 (backend/collector/demo, 이 PC에서만 뜨는 가상 몰). 직접 만든 사이트라 수집 허용
+    ('데모 몰 A (정적 HTML)', 'http://127.0.0.1:8091', 'crawl', NULL, true),
+    ('데모 몰 B (자바스크립트)', 'http://127.0.0.1:8092', 'crawl', NULL, true);
 
 INSERT INTO online.offer (variant_id, mall_id, title, url, price, shipping_fee, sold_out, source, observed_at)
 SELECT v.id, m.id, p.name || ' ' || v.name,

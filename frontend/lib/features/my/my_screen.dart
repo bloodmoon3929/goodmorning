@@ -94,7 +94,7 @@ class MyScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 child: Material(
-                  color: AppColors.orangeBg,
+                  color: AppColors.primaryBg,
                   borderRadius: BorderRadius.circular(14),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
@@ -111,7 +111,7 @@ class MyScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   '사장님이신가요?',
-                                  style: AppText.bodyStrong.copyWith(color: AppColors.orange, fontWeight: FontWeight.w700),
+                                  style: AppText.bodyStrong.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
                                 ),
                                 const SizedBox(height: 2),
                                 Text('판매자 센터에서 매장 재고를 관리하세요 ›', style: AppText.caption.copyWith(color: AppColors.ink)),
@@ -153,7 +153,7 @@ class MyScreen extends StatelessWidget {
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: () => context.push('/ip-manage'),
-                child: Pill('내 IP ${state.myIps.length}개 · 바꾸기 ›', fg: AppColors.orange, bg: AppColors.orangeBg, size: 12),
+                child: Pill('내 IP ${state.myIps.length}개 · 바꾸기 ›', fg: AppColors.primary, bg: AppColors.primaryBg, size: 12),
               ),
             ],
           ),

@@ -3,6 +3,7 @@
 pub mod admin;
 pub mod auth;
 pub mod catalog;
+pub mod console;
 pub mod me;
 pub mod offer;
 pub mod product;

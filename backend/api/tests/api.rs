@@ -441,3 +441,142 @@ async fn admin_matches_collected_listing_into_offer() {
     let a = d["offers"].as_array().unwrap().iter().find(|o| o["mall_name"] == "오픈마켓 A").unwrap();
     assert!(pos(&m["id"]) < pos(&a["id"]));
 }
+
+#[tokio::test]
+async fn admin_console_queues_run_streams_events_and_suggests_matches() {
+    let Some((app, pool)) = setup().await else { return };
+    let user = login(&app, "goods@example.com").await;
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&user), Some(json!({"kind": "crawl"}))).await;
+    assert_eq!(st, StatusCode::FORBIDDEN);
+    let admin = login(&app, "admin@example.com").await;
+
+    // 몰 목록 · 수집 허용 끄고 켜기
+    let (_, malls) = call(&app, "GET", "/admin/malls", Some(&admin), None).await;
+    let demo = malls["items"].as_array().unwrap().iter().find(|m| m["name"] == "데모 몰 A (정적 HTML)").unwrap().clone();
+    let mall_id = demo["id"].as_i64().unwrap();
+    for allowed in [false, true] {
+        let (st, _) = call(&app, "PATCH", &format!("/admin/malls/{mall_id}"), Some(&admin), Some(json!({"crawl_allowed": allowed}))).await;
+        assert_eq!(st, StatusCode::OK);
+        let now: bool = sqlx::query_scalar("SELECT crawl_allowed FROM online.mall WHERE id = $1").bind(mall_id).fetch_one(&pool).await.unwrap();
+        assert_eq!(now, allowed);
+    }
+    let (st, _) = call(&app, "PATCH", "/admin/malls/999999", Some(&admin), Some(json!({"crawl_allowed": true}))).await;
+    assert_eq!(st, StatusCode::NOT_FOUND);
+
+    // 잘못된 요청
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "ftp"}))).await;
+    assert_eq!(st, StatusCode::BAD_REQUEST);
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "crawl", "mall": "없는 몰"}))).await;
+    assert_eq!(st, StatusCode::NOT_FOUND);
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "api", "mall": "데모 몰 A (정적 HTML)"}))).await;
+    assert_eq!(st, StatusCode::BAD_REQUEST);
+    // 공식몰 공개 API: 검색어가 있어야 하고, 모르는 provider는 거절
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "api", "provider": "chiikawa_market"}))).await;
+    assert_eq!(st, StatusCode::BAD_REQUEST);
+    let (st, _) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "api", "provider": "amazon", "keyword": "x"}))).await;
+    assert_eq!(st, StatusCode::BAD_REQUEST);
+    let (st, r) =
+        call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(json!({"kind": "api", "provider": "chiikawa_market", "keyword": "ハチワレ"})))
+            .await;
+    assert_eq!(st, StatusCode::CREATED);
+    let (_, d) = call(&app, "GET", &format!("/admin/collect-runs/{}", r["id"]), Some(&admin), None).await;
+    assert_eq!(d["run"]["params"]["provider"], "chiikawa_market");
+    sqlx::query("UPDATE ingest.collect_run SET status = 'failed', error = '통합 테스트' WHERE id = $1")
+        .bind(r["id"].as_i64().unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    // [수집 시작] → 대기열 (검색어 수는 10개까지로 줄인다)
+    let body = json!({"kind": "crawl", "mall": "데모 몰 A (정적 HTML)", "keyword": " 쿠로미 ", "max_queries": 99});
+    let (st, r) = call(&app, "POST", "/admin/collect-runs", Some(&admin), Some(body)).await;
+    assert_eq!(st, StatusCode::CREATED, "{r}");
+    let run_id = r["id"].as_i64().unwrap();
+    let (_, d) = call(&app, "GET", &format!("/admin/collect-runs/{run_id}"), Some(&admin), None).await;
+    assert_eq!(d["run"]["status"], "queued");
+    assert_eq!(d["run"]["params"], json!({"mall": "데모 몰 A (정적 HTML)", "keyword": "쿠로미", "max_queries": 10, "provider": null}));
+    assert_eq!(d["events"], json!([]));
+    let (_, runs) = call(&app, "GET", "/admin/collect-runs", Some(&admin), None).await;
+    assert!(runs["items"].as_array().unwrap().iter().any(|r| r["id"] == run_id));
+
+    // 워커가 남기는 것과 같은 기록 → after 뒤의 새 기록만 받는다
+    for (step, msg) in [("robots", "robots.txt 200"), ("parse", "상품 1개 읽음")] {
+        sqlx::query("INSERT INTO ingest.collect_event (run_id, step, message, data) VALUES ($1, $2, $3, '{\"status\": 200}')")
+            .bind(run_id)
+            .bind(step)
+            .bind(msg)
+            .execute(&pool)
+            .await
+            .unwrap();
+    }
+    let (_, d) = call(&app, "GET", &format!("/admin/collect-runs/{run_id}?after=0"), Some(&admin), None).await;
+    let events = d["events"].as_array().unwrap();
+    assert_eq!(events.len(), 2);
+    assert_eq!((events[0]["step"].as_str(), events[0]["data"]["status"].as_i64()), (Some("robots"), Some(200)));
+    let first = events[0]["id"].as_i64().unwrap();
+    let (_, d) = call(&app, "GET", &format!("/admin/collect-runs/{run_id}?after={first}"), Some(&admin), None).await;
+    assert_eq!(d["events"].as_array().unwrap().len(), 1);
+
+    // 이 실행에서 모은 원본 + 매칭 후보 (수집 검색어의 버전이 맨 앞)
+    let kuromi = product_by_name(&app, "쿠로미 마스코트 인형").await;
+    let small = variant_id(&kuromi, "일반 10cm");
+    let job_id: i64 = sqlx::query_scalar("INSERT INTO ingest.collect_job (mall_id, kind, run_id) VALUES ($1, 'crawl', $2) RETURNING id")
+        .bind(mall_id)
+        .bind(run_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let raw_id: i64 = sqlx::query_scalar(
+        "INSERT INTO ingest.raw_listing (mall_id, source, source_url, title, price, shipping_fee, payload, collected_at, job_id)
+         VALUES ($1, 'crawl', $2, '[산리오 정품] 쿠로미 마스코트 인형 10cm', 12500, 3000, jsonb_build_object('query_variant_id', $3::bigint), now(), $4)
+         RETURNING id",
+    )
+    .bind(mall_id)
+    .bind(format!("http://127.0.0.1:8091/goods/{}", unique("g")))
+    .bind(small)
+    .bind(job_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let (_, list) = call(&app, "GET", &format!("/admin/raw-listings?run_id={run_id}"), Some(&admin), None).await;
+    assert_eq!(list["items"].as_array().unwrap().iter().map(|r| r["id"].as_i64().unwrap()).collect::<Vec<_>>(), vec![raw_id]);
+    let _ = &list;
+    let (_, c) = call(&app, "GET", &format!("/admin/raw-listings/{raw_id}/candidates"), Some(&admin), None).await;
+    assert_eq!(c["items"][0]["variant_id"], small);
+    assert_eq!(c["items"][0]["from_query"], true);
+    assert!(c["items"][0]["hits"].as_i64().unwrap() >= 4, "{c}");
+    let (_, d) = call(&app, "GET", &format!("/admin/collect-runs/{run_id}"), Some(&admin), None).await;
+    assert_eq!(d["jobs"][0]["mall_name"], "데모 몰 A (정적 HTML)");
+
+    // 띄어쓰기 없는 일본어 제목도 별칭(ちいかわ)으로 치이카와 버전이 앞에 온다
+    let jp: i64 = sqlx::query_scalar(
+        "INSERT INTO ingest.raw_listing (mall_id, source, source_url, title, price, collected_at, job_id)
+         VALUES ($1, 'api', $2, 'まじかるちいかわ マジカルチャージマスコット（ハチワレ）', 13931, now(), $3) RETURNING id",
+    )
+    .bind(mall_id)
+    .bind(format!("https://chiikawamarket.jp/products/{}", unique("p")))
+    .bind(job_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let (_, c) = call(&app, "GET", &format!("/admin/raw-listings/{jp}/candidates"), Some(&admin), None).await;
+    assert_eq!(c["items"][0]["ip_name"], "치이카와", "{c}");
+
+    // 수집기 연결 상태
+    sqlx::query("INSERT INTO ingest.collect_worker (name, pid) VALUES ('test-worker', 1) ON CONFLICT (name) DO UPDATE SET seen_at = now()")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let (_, s) = call(&app, "GET", "/admin/collector", Some(&admin), None).await;
+    assert_eq!(s["worker_alive"], true);
+    assert!(s["queued"].as_i64().unwrap() >= 1);
+
+    // 테스트로 넣은 실행은 워커가 가져가지 않게 끝낸다
+    sqlx::query("UPDATE ingest.collect_run SET status = 'failed', error = '통합 테스트' WHERE id = $1").bind(run_id).execute(&pool).await.unwrap();
+    sqlx::query("DELETE FROM ingest.collect_worker WHERE name = 'test-worker'").execute(&pool).await.unwrap();
+
+    // 관리자 페이지 파일
+    let (st, page) = call(&app, "GET", "/console/", None, None).await;
+    assert_eq!(st, StatusCode::OK);
+    assert!(page.as_str().unwrap().contains("수집 관리"));
+}
