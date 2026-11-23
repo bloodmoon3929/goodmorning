@@ -4,13 +4,14 @@ import '../../../core/theme/app_colors.dart';
 import '../room_view_model.dart';
 
 /// 방 그림 위에 벽지 · 바닥 · 선반 색을 곱하기로 입히고, 칸에 3D 에셋을 놓는다 (시안의 내 방 꾸미기).
-/// 놓은 굿즈는 좌우로 끌면 돌아가고, 누르면 상품 정보가 열린다.
+/// 놓은 굿즈를 누르면 360° 돌려 전시 방향을 정하는 창이 열리고, 좌우로 끌어도 돌아간다.
 class MiniRoom extends StatelessWidget {
-  const MiniRoom({super.key, required this.vm, required this.assetPath, required this.dragging});
+  const MiniRoom({super.key, required this.vm, required this.assetPath, required this.dragging, required this.onPlacedTap});
 
   final RoomViewModel vm;
   final String Function(int turn) assetPath;
   final bool dragging; // 트레이에서 끄는 중이면 빈 칸을 보여 준다
+  final VoidCallback onPlacedTap; // 놓은 굿즈를 누르면 전시 방향 정하기
 
   @override
   Widget build(BuildContext context) => AspectRatio(
@@ -50,17 +51,17 @@ class MiniRoom extends StatelessWidget {
           if (filled) {
             return Semantics(
               button: true,
-              label: '${s.name}에 놓은 굿즈. 누르면 상품 정보, 좌우로 끌면 회전',
+              label: '${s.name}에 놓은 굿즈, ${vm.displayDegrees}° 방향. 누르면 전시 방향 정하기',
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: vm.toggleInfo,
-                onHorizontalDragUpdate: (d) => vm.rotateBy(d.delta.dx * 3),
+                onTap: onPlacedTap,
+                onHorizontalDragUpdate: (d) => vm.setDisplayTurn(vm.displayTurn - (d.delta.dx * 3 / 6).round()),
                 // 렌더 그림에 여백이 있어서 칸보다 크게, 바닥에 붙여서
                 child: OverflowBox(
                   maxWidth: w * s.width / 100 * 2.4,
                   maxHeight: h * s.height / 100 * 2.4,
                   alignment: Alignment.bottomCenter,
-                  child: Image.asset(assetPath(vm.turn), fit: BoxFit.contain, gaplessPlayback: true),
+                  child: Image.asset(assetPath(vm.displayTurn), fit: BoxFit.contain, gaplessPlayback: true),
                 ),
               ),
             );
