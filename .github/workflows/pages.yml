@@ -1,19 +1,21 @@
 name: 프로토타입 배포 (GitHub Pages)
 
-# main: 정적 프로토타입(/)과 Flutter 웹 앱(/app/)을 GitHub Pages로 배포한다.
+# main: 관리자 페이지(/)와 Flutter 웹 앱(/app/)을 GitHub Pages로 배포한다.
+#   관리자 페이지는 정적 파일이고, 데이터는 이 PC에서 띄운 API 서버(기본 http://localhost:8080)에서 받는다.
+#   (FigCraft 클릭 프로토타입 prototype/site는 더 이상 배포하지 않는다 — 폴더는 남겨 둠)
 # 그 밖의 브랜치 · PR: 같은 결과물을 만들어 실행 결과에 zip(artifact)으로 첨부한다.
 #   (github-pages 환경은 main만 배포할 수 있게 보호되어 있다)
 on:
   push:
     branches: [main]
     paths:
-      - 'prototype/**'
+      - 'backend/api/console/**'
       - 'frontend/**'
       - '.github/workflows/pages.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'prototype/**'
+      - 'backend/api/console/**'
       - 'frontend/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -53,15 +55,14 @@ jobs:
         working-directory: frontend
         run: flutter build web --release --base-href /goodmorning/app/ --no-web-resources-cdn --no-wasm-dry-run
 
-      - name: 정적 프로토타입(FigCraft 화면 + 뷰어)과 Flutter 앱 모으기
+      - name: 관리자 페이지와 Flutter 앱 모으기
         run: |
           mkdir -p _site/app
-          cp -r prototype/site/. _site/
+          cp -r backend/api/console/. _site/
           cp -r frontend/build/web/. _site/app/
 
-      # 정적 프로토타입은 zip을 풀고 index.html을 바로 열면 보인다.
-      # Flutter 앱(app/)은 파일로 열면 안 뜬다: zip을 goodmorning/ 폴더에 풀고, 그 바깥 폴더에서
-      # python3 -m http.server 8000 → http://localhost:8000/goodmorning/app/
+      # zip을 goodmorning/ 폴더에 풀고, 그 바깥 폴더에서 python3 -m http.server 8000
+      # → 관리자 페이지 http://localhost:8000/goodmorning/ (API 서버 주소를 적고 로그인), 앱 http://localhost:8000/goodmorning/app/
       - name: 내려받아 볼 수 있게 첨부
         uses: actions/upload-artifact@v7
         with:
