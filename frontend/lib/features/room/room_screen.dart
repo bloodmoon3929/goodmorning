@@ -45,8 +45,10 @@ class _RoomScreenState extends State<RoomScreen> {
     for (var i = 0; i < a.segmentCount; i++) {
       precacheImage(AssetImage(a.segment(i)), context);
     }
-    for (var i = 0; i < a.turnCount; i++) {
-      precacheImage(AssetImage(a.turn(i)), context);
+    for (final v in a.variants) {
+      for (var i = 0; i < v.count; i++) {
+        precacheImage(AssetImage(a.turnOf(v, i)), context);
+      }
     }
   }
 
@@ -142,7 +144,7 @@ class _RoomScreenState extends State<RoomScreen> {
 
   Widget _stage(RoomAsset a) {
     if (vm.step == RoomStep.room) {
-      return MiniRoom(vm: vm, assetPath: a.turn, dragging: _dragging);
+      return MiniRoom(vm: vm, assetPath: (t) => a.turnOf(vm.variant!, t), dragging: _dragging);
     }
     final Widget content = switch (vm.step) {
       RoomStep.capture => Flipbook(
@@ -165,13 +167,20 @@ class _RoomScreenState extends State<RoomScreen> {
       ),
       _ => Padding(
         padding: const EdgeInsets.all(12),
-        child: Turntable(count: a.turnCount, index: vm.turn, path: a.turn, onRotate: vm.rotateBy, onSetIndex: vm.setTurn, autoSpin: true),
+        child: Turntable(
+          count: vm.variant!.count,
+          index: vm.turn,
+          path: (i) => a.turnOf(vm.variant!, i),
+          onRotate: vm.rotateBy,
+          onSetIndex: vm.setTurn,
+          autoSpin: true,
+        ),
       ),
     };
     final label = switch (vm.step) {
       RoomStep.capture => _playing ? '촬영 중 · ${(_progress * 360).round()}°' : '손 위에서 360° 촬영',
       RoomStep.segment => '${a.segmentModel} · "${a.segmentPrompt}"',
-      _ => '3D 에셋 · ${(vm.turn * 360 / a.turnCount).round()}°',
+      _ => '${vm.variant!.label} · ${(vm.turn * 360 / vm.variant!.count).round()}°',
     };
     return AspectRatio(
       aspectRatio: 4 / 5,
@@ -230,7 +239,8 @@ class _RoomScreenState extends State<RoomScreen> {
         ];
       case RoomStep.preview:
         return [
-          _status('3D 에셋 미리보기', '인형을 좌우로 끌어 돌려보세요. 영상에 없던 각도도 3D로 그려요.'),
+          _status('3D 에셋 미리보기', '인형을 좌우로 끌어 돌려보세요. 방법을 바꿔 같은 각도에서 비교할 수 있어요.'),
+          _variants(a),
           _facts(a),
           const SizedBox(height: 12),
           _buttons(AppButton('에셋을 내 방으로 가져가기', onPressed: () => vm.complete(RoomStep.preview))),
@@ -239,6 +249,7 @@ class _RoomScreenState extends State<RoomScreen> {
         return [
           _status('내 굿즈 방', vm.placed == null ? '벽지 · 바닥 · 선반 색을 고르고 굿즈를 배치해 보세요.' : '놓은 인형을 좌우로 끌면 돌아가고, 누르면 상품 정보가 열려요.'),
           const SizedBox(height: 4),
+          _variants(a),
           _tray(a),
           const SizedBox(height: 12),
           _tones(),
@@ -281,24 +292,49 @@ class _RoomScreenState extends State<RoomScreen> {
     ),
   );
 
-  Widget _facts(RoomAsset a) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColors.cardLine),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _fact('복원 방법', a.reconMethod),
-        _fact('카메라 위치', a.poseMethod),
-        _fact('학습에 쓴 사진', '${a.trainViews}장 (흔들린 프레임 제외)'),
-        _fact('가우시안 수', '${a.gaussians}개'),
-        if (a.psnr != null) _fact('확인용 사진 재현도', 'PSNR ${a.psnr!.toStringAsFixed(1)}dB (학습에 안 쓴 사진 기준)'),
-      ],
-    ),
-  );
+  /// 3D 방법 고르기 (비교 결과가 있을 때만)
+  Widget _variants(RoomAsset a) => a.variants.length < 2
+      ? const SizedBox.shrink()
+      : Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: ChipRow(
+            padding: EdgeInsets.zero,
+            children: [
+              for (var i = 0; i < a.variants.length; i++)
+                AppChip(a.variants[i].label, size: 12, style: ChipStyle.point, selected: vm.variantIndex == i, onTap: () => vm.setVariant(i)),
+            ],
+          ),
+        );
+
+  Widget _facts(RoomAsset a) {
+    final v = vm.variant!;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.cardLine),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _fact('복원 방법', v.method),
+          if (v.singlePhoto) ...[
+            _fact('쓴 사진', '영상 첫 프레임 1장 + SAM 3 마스크'),
+            if (v.seconds != null) _fact('걸린 시간', '${v.seconds!.toStringAsFixed(0)}초 (GPU A6000, 모델 불러오기 제외)'),
+            _fact('가우시안 수', '${v.gaussians}개'),
+            _fact('주의', '사진에 안 보인 면(뒤 · 꼬리)은 모델이 추정해서 채워요. 표면은 깨끗하지만 실제 모양과 다를 수 있어요'),
+          ] else ...[
+            if (v.poses != null) _fact('카메라 위치', v.poses!),
+            _fact('학습에 쓴 사진', '${v.views}장 (흔들린 프레임 제외)'),
+            _fact('가우시안 수', '${v.gaussians}개'),
+            if (v.psnr != null) _fact('확인용 사진 재현도', 'PSNR ${v.psnr!.toStringAsFixed(1)}dB (학습에 안 쓴 사진 기준)'),
+            _fact('주의', '영상에 찍힌 면은 실제대로 나오지만 가장자리에 잡티가 남아요'),
+          ],
+        ],
+      ),
+    );
+  }
 
   Widget _fact(String k, String v) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 2),
@@ -312,14 +348,14 @@ class _RoomScreenState extends State<RoomScreen> {
   );
 
   Widget _tray(RoomAsset a) {
-    final thumb = Image.asset(a.turn(a.frontIndex), height: 58);
+    final thumb = Image.asset(a.turnOf(vm.variant!, a.frontIndex), height: 58);
     return Row(
       children: [
         Draggable<String>(
           data: a.name,
           onDragStarted: () => setState(() => _dragging = true),
           onDragEnd: (_) => setState(() => _dragging = false),
-          feedback: SizedBox(width: 90, height: 90, child: Image.asset(a.turn(vm.turn))),
+          feedback: SizedBox(width: 90, height: 90, child: Image.asset(a.turnOf(vm.variant!, vm.turn))),
           childWhenDragging: Opacity(opacity: 0.35, child: _trayBox(thumb)),
           child: Semantics(
             button: true,
