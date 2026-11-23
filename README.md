@@ -12,7 +12,7 @@ UST AI 응용을 위한 UX 설계 · 팀 에뚜리들 (김상우, 임상원, 전
 |2|쇼핑 API 구현|구현함: 치이카와 마켓 공개 상품 JSON(키 없음, 실제 호출 · 환율 변환). 쿠팡 파트너스는 코드 있음, 키 발급 후 호출 확인 필요|[`backend/collector/api_clients/`](backend/collector/api_clients/)|
 |3|DB 구현|구현함 (PostgreSQL + PostGIS + pgvector, 스키마 5개 · 테이블 31개, 개발용 가상 데이터)|[`backend/db/`](backend/db/)|
 |4|Rust 기반 백엔드 구현|구현함 (Axum + sqlx, MVC) + 관리자 페이지 `/console/`|[`backend/api/`](backend/api/), API 목록은 [`backend/README.md`](backend/README.md)|
-|5|SAM 3D나 가우시안 스플래팅으로 에셋을 만들어, 이 에셋을 나만의 집에 장식할 수 있는 기능 (싸이월드 느낌)|시연 구현함: 굿즈 360° 영상 1개 → SAM 3 분할 → 가우시안 스플래팅 → 앱 '내 방' 탭에서 방에 배치. 다시 찍을 수 있게 앱에 자동 촬영 가이드(얼굴 등록처럼 높이 3줄 × 방향 24칸). SAM 3D Objects는 가중치 승인 대기(403), 실행 환경은 준비|[`backend/ai/asset3d/`](backend/ai/asset3d/), [`frontend/lib/features/room/`](frontend/lib/features/room/)|
+|5|SAM 3D나 가우시안 스플래팅으로 에셋을 만들어, 이 에셋을 나만의 집에 장식할 수 있는 기능 (싸이월드 느낌)|시연 구현함: 굿즈 360° 영상 1개 → SAM 3 분할 → 가우시안 스플래팅 → 앱 '내 방' 탭에서 방에 배치. 다시 찍을 수 있게 앱에 자동 촬영 가이드(얼굴 등록처럼 높이 3줄 × 방향 24칸). SAM 3D Objects(사진 1장 → 3D)와 같은 각도로 비교 — 앱에서 방법을 바꿔 볼 수 있음|[`backend/ai/asset3d/`](backend/ai/asset3d/), [`frontend/lib/features/room/`](frontend/lib/features/room/)|
 
 > 네이버 쇼핑 검색 API는 2026-07-31에 종료되어(NAVER API HUB로도 옮겨지지 않음) 쇼핑 API는 쿠팡 파트너스만 연동했다.
 

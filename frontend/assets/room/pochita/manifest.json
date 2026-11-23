@@ -23,7 +23,19 @@
   "method": "3D 가우시안 스플래팅 (gsplat)",
   "poses": "COLMAP SfM · ALIKED + LightGlue 매칭",
   "views": 140,
-  "gaussians": 154045,
-  "psnr": 16.87
- }
+  "gaussians": 109997,
+  "psnr": 16.72
+ },
+ "compare": [
+  {
+   "id": "sam3d",
+   "label": "SAM 3D (사진 1장)",
+   "method": "SAM 3D Objects (사진 1장 → 3D)",
+   "prefix": "sam3d_turn_",
+   "count": 72,
+   "views": 1,
+   "gaussians": 877984,
+   "seconds": 53.6
+  }
+ ]
 }

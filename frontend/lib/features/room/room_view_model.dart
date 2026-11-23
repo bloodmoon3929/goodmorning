@@ -64,6 +64,7 @@ class RoomViewModel extends ViewModel {
   ];
 
   Load<RoomAsset> asset = const Loading();
+  int variantIndex = 0; // 0 = 가우시안 스플래팅, 1 = SAM 3D (비교)
   RoomStep step = RoomStep.capture;
   final Set<RoomStep> done = {};
   int turn = 0; // 회전 렌더 번호
@@ -72,6 +73,18 @@ class RoomViewModel extends ViewModel {
   WallTone wall = WallTone.pink;
   FloorTone floor = FloorTone.ivory;
   ShelfTone shelf = ShelfTone.pink;
+
+  /// 지금 고른 3D 방법
+  ReconVariant? get variant {
+    final a = asset.valueOrNull;
+    return a == null ? null : a.variants[variantIndex.clamp(0, a.variants.length - 1)];
+  }
+
+  /// 방법을 바꿔도 같은 각도를 보게 회전 번호는 그대로 둔다 (두 방법 모두 입력 사진 방향이 0°)
+  void setVariant(int i) {
+    variantIndex = i;
+    notify();
+  }
 
   Future<void> loadIfNeeded() async {
     if (asset is Loaded<RoomAsset>) return;
@@ -117,14 +130,14 @@ class RoomViewModel extends ViewModel {
     if (a == null) return;
     final steps = (dx / 6).round();
     if (steps == 0) return;
-    turn = (turn - steps) % a.turnCount;
+    turn = (turn - steps) % variant!.count;
     notify();
   }
 
   void setTurn(int i) {
     final a = asset.valueOrNull;
     if (a == null) return;
-    turn = i % a.turnCount;
+    turn = i % variant!.count;
     notify();
   }
 

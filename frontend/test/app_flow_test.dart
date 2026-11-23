@@ -133,6 +133,15 @@ void main() {
     expect(find.text('3D 에셋 미리보기'), findsOneWidget);
     expect(find.textContaining('가우시안'), findsWidgets);
 
+    // 같은 각도에서 SAM 3D(사진 1장) 결과로 바꿔 비교
+    await t.ensureVisible(find.text('SAM 3D (사진 1장)'));
+    await t.tap(find.text('SAM 3D (사진 1장)'));
+    await settle(t, 2);
+    expect(find.text('영상 첫 프레임 1장 + SAM 3 마스크'), findsOneWidget);
+    await t.tap(find.text('가우시안 스플래팅 (영상)'));
+    await settle(t, 2);
+    expect(find.textContaining('흔들린 프레임 제외'), findsOneWidget);
+
     await t.ensureVisible(find.text('에셋을 내 방으로 가져가기'));
     await t.tap(find.text('에셋을 내 방으로 가져가기'));
     await settle(t);
