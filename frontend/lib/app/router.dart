@@ -15,6 +15,8 @@ import '../features/my/my_screen.dart';
 import '../features/my/visit_history_screen.dart';
 import '../features/notification/notification_screen.dart';
 import '../features/product/product_screen.dart';
+import '../features/room/capture/capture_screen.dart';
+import '../features/room/room_screen.dart';
 import '../features/search/photo_search_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/seller/seller_screen.dart';
@@ -26,7 +28,7 @@ import 'app_state.dart';
 import 'shell_screen.dart';
 
 /// 화면 이동 (docs/01-screen-flow.md 화면 흐름 그래프).
-/// 하단 탭 4개는 StatefulShellRoute(IndexedStack)로 살려 두고, 상품 상세처럼 여러 곳에서 들어오는 화면은 탭 위에 띄운다.
+/// 하단 탭 5개는 StatefulShellRoute(IndexedStack)로 살려 두고, 상품 상세처럼 여러 곳에서 들어오는 화면은 탭 위에 띄운다.
 GoRouter buildRouter(AppState state) {
   final rootKey = GlobalKey<NavigatorState>();
 
@@ -92,6 +94,9 @@ GoRouter buildRouter(AppState state) {
             ],
           ),
           StatefulShellBranch(
+            routes: [GoRoute(path: '/room', builder: (_, _) => const RoomScreen())],
+          ),
+          StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/stores',
@@ -139,6 +144,8 @@ GoRouter buildRouter(AppState state) {
       ),
       GoRoute(parentNavigatorKey: rootKey, path: '/ip-manage', builder: (_, _) => const IpManageScreen()),
       GoRoute(parentNavigatorKey: rootKey, path: '/seller', builder: (_, _) => const SellerScreen()),
+      // 내 방 → 직접 촬영 (자동 촬영 가이드, 전체 화면)
+      GoRoute(parentNavigatorKey: rootKey, path: '/capture', builder: (_, _) => const CaptureScreen()),
     ],
   );
 }

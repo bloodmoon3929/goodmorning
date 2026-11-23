@@ -115,4 +115,41 @@ void main() {
     expect(find.text('변경 저장'), findsOneWidget);
     expect(find.textContaining('마지막 확인: 방금 전'), findsOneWidget);
   });
+
+  testWidgets('내 방: 촬영 → 윤곽 분리 → 3D 미리보기 → 방에 놓고 상품 정보', (t) async {
+    await start(t);
+    await loginAsMember(t);
+    await t.tap(find.text('내 방').last);
+    await settle(t, 6);
+    expect(find.text('내 굿즈 방'), findsOneWidget);
+    expect(find.textContaining('실제 영상이에요'), findsOneWidget);
+
+    // 촬영 영상이 끝나면 윤곽 분리가 이어서 재생되고, 끝나면 3D 미리보기
+    await t.ensureVisible(find.text('촬영 영상 재생'));
+    await t.tap(find.text('촬영 영상 재생'));
+    for (var i = 0; i < 18; i++) {
+      await t.pump(const Duration(milliseconds: 800));
+    }
+    expect(find.text('3D 에셋 미리보기'), findsOneWidget);
+    expect(find.textContaining('가우시안'), findsWidgets);
+
+    await t.ensureVisible(find.text('에셋을 내 방으로 가져가기'));
+    await t.tap(find.text('에셋을 내 방으로 가져가기'));
+    await settle(t);
+    expect(find.textContaining('끌어 놓으세요'), findsOneWidget);
+    expect(find.text('굿즈 정보 보기'), findsOneWidget);
+
+    // 트레이를 누르면 첫 칸에 놓이고, 정보 보기를 누르면 구매처 안내
+    await t.ensureVisible(find.bySemanticsLabel('포치타 인형 배치'));
+    await t.tap(find.bySemanticsLabel('포치타 인형 배치'));
+    await settle(t, 3);
+    expect(find.text('선반 위 칸에 놓았어요.'), findsOneWidget);
+    await t.ensureVisible(find.text('살구'));
+    await t.tap(find.text('살구'));
+    await settle(t, 2);
+    await t.ensureVisible(find.text('굿즈 정보 보기'));
+    await t.tap(find.text('굿즈 정보 보기'));
+    await settle(t, 3);
+    expect(find.text('등록된 구매처가 없어요.'), findsOneWidget);
+  });
 }

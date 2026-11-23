@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../emoji/emoji_image.dart';
 
-/// 하단 탭 바: 홈 / 굿즈 탐색 / 매장 찾기 / 마이
+/// 하단 탭 바: 홈 / 굿즈 탐색 / 내 방 / 매장 찾기 / 마이
 class BottomTabBar extends StatelessWidget {
   const BottomTabBar({super.key, required this.currentIndex, required this.onTap});
 
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const tabs = [('house', '홈'), ('teddy', '굿즈 탐색'), ('pin', '매장 찾기'), ('smile', '마이')];
+  static const tabs = [('house', '홈'), ('teddy', '굿즈 탐색'), ('picture', '내 방'), ('pin', '매장 찾기'), ('smile', '마이')];
 
   @override
   Widget build(BuildContext context) => DecoratedBox(

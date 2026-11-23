@@ -7,9 +7,13 @@ environment:
   sdk: ^3.13.7
 
 dependencies:
+  archive: ^4.7.1
+  camera: ^0.12.2
   flutter:
     sdk: flutter
   go_router: ^18.1.2
+  sensors_plus: ^7.1.1
+  web: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +26,8 @@ flutter:
   assets:
     - assets/emoji/
     - assets/brand/
+    - assets/room/
+    - assets/room/pochita/
 
   fonts:
     - family: Pretendard
