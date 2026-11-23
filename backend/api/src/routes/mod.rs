@@ -4,6 +4,7 @@
 mod admin;
 mod auth;
 mod catalog;
+mod console;
 mod me;
 mod offer;
 mod product;
@@ -26,6 +27,7 @@ pub fn router(state: AppState) -> Router {
         .merge(admin::routes())
         .merge(auth::routes())
         .merge(catalog::routes())
+        .merge(console::routes())
         .merge(me::routes())
         .merge(offer::routes())
         .merge(product::routes())
@@ -39,7 +41,8 @@ pub fn router(state: AppState) -> Router {
 }
 
 fn cors(origins: &[String]) -> CorsLayer {
-    let layer = CorsLayer::new().allow_methods(Any).allow_headers(Any);
+    // allow_private_network: GitHub Pages에 올린 관리자 페이지(https)가 이 PC의 API(localhost)를 부를 수 있게 (Chrome 사설망 접근 확인)
+    let layer = CorsLayer::new().allow_methods(Any).allow_headers(Any).allow_private_network(true);
     if origins.is_empty() {
         return layer.allow_origin(Any);
     }

@@ -17,3 +17,17 @@ pub struct Offer {
     pub source: String,
     pub observed_at: DateTime<Utc>,
 }
+
+/// online.mall + 판매처 · 수집 원본 수 (관리자 페이지)
+#[derive(Debug, Clone, FromRow)]
+pub struct MallStat {
+    pub id: i64,
+    pub name: String,
+    pub site_url: Option<String>,
+    pub source: String,
+    pub api_name: Option<String>,
+    pub crawl_allowed: bool,
+    pub is_active: bool,
+    pub offer_count: i64,
+    pub raw_count: i64,
+}
