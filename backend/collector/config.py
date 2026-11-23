@@ -41,6 +41,9 @@ class CoupangConfig:
     # 한 번 실행할 때 부를 최대 횟수 · 호출 사이 간격(초). 쿠팡 파트너스 호출 한도를 넘으면 키가 정지될 수 있다.
     max_calls: int
     min_interval_sec: float
+    # 저장할 몰 이름 · 상품 주소 앞부분. 데모(쿠팡 형식 테스트 서버)에서는 실제 쿠팡과 섞이지 않게 바꾼다.
+    mall_name: str = "쿠팡"
+    product_base: str = "https://www.coupang.com"
 
     @staticmethod
     def from_env() -> CoupangConfig:
@@ -56,4 +59,6 @@ class CoupangConfig:
             search_path=os.environ.get("COUPANG_SEARCH_PATH", "/v2/providers/affiliate_open_api/apis/openapi/products/search"),
             max_calls=int(os.environ.get("COUPANG_MAX_CALLS", "10")),
             min_interval_sec=float(os.environ.get("COUPANG_MIN_INTERVAL_SEC", "5")),
+            mall_name=os.environ.get("COUPANG_MALL_NAME", "쿠팡"),
+            product_base=os.environ.get("COUPANG_PRODUCT_BASE", "https://www.coupang.com").rstrip("/"),
         )

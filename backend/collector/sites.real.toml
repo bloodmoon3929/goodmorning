@@ -1,0 +1,60 @@
+# 실제 몰 크롤링 설정. 2026-11-23에 robots.txt와 이용약관을 확인했다.
+#   robots.txt: 검색 · 상품 페이지를 막지 않음 (Scrapy도 요청마다 robots.txt를 다시 확인한다)
+#   이용약관: 네 곳 모두 공정위 표준약관 형태. 자동 수집을 따로 금지하는 조항은 없고,
+#            "몰에 게시된 정보의 변경 · 업무를 방해하는 행위 · 저작권 침해"를 금지 → 요청 간격 3초 · 한 번에 하나, 이름 · 가격 · 주소만 저장(이미지는 주소만)
+# reviewed가 있는 몰은 처음 DB에 만들 때 수집 허용(crawl_allowed = true). 관리자 페이지에서 언제든 끌 수 있다.
+# 사이트 구조가 바뀌면 선택자가 맞지 않아 "상품 0개 읽음"으로 보인다 → 관리자 페이지의 파싱 기록으로 확인.
+
+# 반다이남코코리아몰 — 일반 브라우저가 아니면 모바일 사이트로 보낸다. 모바일 검색 결과는 서버가 HTML을 그린다
+[[site]]
+mall = "반다이남코코리아몰"
+site_url = "https://www.bnkrmall.co.kr"
+reviewed = "2026-11-23 robots.txt(/nmanager · /cscenter · /member만 막음) · 쇼핑몰 이용약관 확인"
+search_url = "https://m.bnkrmall.co.kr/mw/goods/search.do?sword={query}"
+js = false
+item = "a.item"
+title = ".text_box .name::text"
+price = ".text_box .price .num::text"
+link = "::attr(href)"
+
+# 포켓몬스토어 — NHN 커머스(샵바이) 화면. 목록을 자바스크립트로 그린다
+[[site]]
+mall = "포켓몬스토어"
+site_url = "https://www.pokemonstore.co.kr"
+reviewed = "2026-11-23 robots.txt(전체 허용) · 이용약관 확인"
+search_url = "https://www.pokemonstore.co.kr/pages/product/product-list.html?keywords={query}"
+js = true
+item = "div.thumb-item"
+title = ".thumb-item__info p::text"
+price = ".product-thumb-price::text"
+image = "img::attr(src)"
+link = "a.thumb-item__info::attr(href)"
+
+# 대원샵 — 검색 결과를 자바스크립트 템플릿으로 그린다
+[[site]]
+mall = "대원샵"
+site_url = "https://www.daewonshop.com"
+reviewed = "2026-11-23 robots.txt(전체 허용) · 이용약관 확인"
+search_url = "https://www.daewonshop.com/search?searchKeyword={query}"
+js = true
+item = "#productList-template-render div.item"
+title = ".subj a::text"
+price = ".price .real::text"
+image = ".thumb img::attr(src)"
+link = ".subj a::attr(href)"
+
+# 텐바이텐 — 목록을 자바스크립트로 그리고, 상품 링크도 자바스크립트라 이미지 파일명(B00+상품번호)에서 상품 주소를 만든다
+[[site]]
+mall = "텐바이텐"
+site_url = "https://www.10x10.co.kr"
+reviewed = "2026-11-23 robots.txt(/common · /my10x10 등 회원 · 결제 폴더만 막음) · 이용약관 확인"
+search_url = "https://www.10x10.co.kr/search/renewal/index.asp?rect={query}"
+js = true
+item = "li[data-asp-product-card]"
+title = "h3.productCardTitle::text"
+price = "strong.price::text"
+shipping = "li[data-product-badge='FREE_SHIPPING']::text"
+image = "img::attr(src)"
+link = "img::attr(src)"
+link_pattern = 'B0*(\d+)\.jpg'
+link_format = "https://www.10x10.co.kr/shopping/category_prd.asp?itemid={0}"

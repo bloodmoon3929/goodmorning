@@ -34,8 +34,9 @@ PLAYWRIGHT_BROWSER_TYPE = "chromium"
 PLAYWRIGHT_LAUNCH_OPTIONS = {"headless": True}
 PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 30_000
 
-# 수집 대상 몰 설정 (선택자). 실제 몰은 robots.txt · 약관을 확인한 뒤 sites.toml에 넣는다.
-SITES_FILE = "sites.toml"
+# 수집 대상 몰 설정 (선택자). 실제 몰은 robots.txt · 약관을 확인한 뒤 넣는다.
+# sites.real.toml: 확인한 실제 몰 (저장소에 있음), sites.toml: 이 PC에서만 더하는 몰 (저장소 제외)
+SITES_FILE = "sites.real.toml,sites.toml"
 # online.mall.crawl_allowed = true 인 몰만 수집한다. (False는 tests/의 로컬 고정 페이지 테스트용)
 CRAWL_ALLOWED_CHECK = True
 
