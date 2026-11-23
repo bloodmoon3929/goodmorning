@@ -20,3 +20,7 @@ prototype/figcraft/.build/
 .ruff_cache/
 backend/collector/sites.toml
 backend/collector/logs/
+
+# 3D 에셋 파이프라인 중간 결과 (프레임 · 마스크 · SfM · 학습 결과 · .ply)
+backend/ai/asset3d/work/
+backend/ai/asset3d/output/
