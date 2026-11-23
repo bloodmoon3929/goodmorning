@@ -13,7 +13,8 @@ db/
 │   ├── 0004_online.sql           # mall, offer, offer_history
 │   ├── 0005_offline.sql          # store, stock, stock_report, store_suggestion
 │   ├── 0006_account.sql          # user_ip, ip_request, seller_member, wishlist, saved_store, alert, notification, outbound_click, purchase, issue
-│   └── 0007_ingest.sql           # collect_job, raw_listing, product_request
+│   ├── 0007_ingest.sql           # collect_job, raw_listing, product_request
+│   └── 0008_collect_run.sql      # 관리자 페이지에서 시작하는 수집: collect_run(대기열) · collect_event(단계별 기록) · collect_worker(생존 신호)
 └── seed/dev_seed.sql # 개발용 가상 데이터 (frontend 목업과 같은 값)
 ```
 
@@ -25,7 +26,8 @@ db/
 
 ## 개발용 가상 데이터
 
-- IP 9 · 캐릭터 13 · 상품 20 · 버전 25 · 몰 5 · 몰별 가격 49 · 매장 5 · 재고 22, 회원 6 (backend/README.md의 개발용 계정)
+- IP 9 · 캐릭터 13 · 상품 20 · 버전 25 · 몰 7 · 몰별 가격 49 · 매장 5 · 재고 22, 회원 6 (backend/README.md의 개발용 계정)
+- 몰 7곳 중 2곳(데모 몰 A · B)은 수집기 데모 사이트(`collector/demo`, 127.0.0.1)다. 직접 만든 사이트라 `crawl_allowed = true`
 - 매장 주소 · 전화 · 몰 주소(`.example`) · 가격은 가상이다. 매장 좌표는 동네의 대략적인 위치다.
 - 이미지는 캐릭터 사진 대신 앱에 들어 있는 이모지 그림 키를 `emoji:<키>`로 넣었다 (공개 저장소).
 - 시각은 넣는 순간(now) 기준이다. 48시간이 지나면 재고가 '확인 필요'로 바뀌므로, 화면 예시 그대로 보려면 DB를 새로 만든다 (`docker compose down -v`).
@@ -44,4 +46,6 @@ db/
 |`catalog.character`|—|`(ip_id, name)` UNIQUE||
 |`offline.store.location`|`GEOGRAPHY`|`GEOGRAPHY(Point, 4326)` + GiST 인덱스|거리 계산|
 |`catalog.embedding.vector`|`VECTOR(768)`|+ HNSW 인덱스 (코사인)|사진 · 텍스트 검색|
+|`ingest.collect_run` · `collect_event` · `collect_worker`|—|새 테이블 (0008)|관리자 페이지에서 수집을 실제로 시작하고 진행을 보기 위해. db.md · PPT에는 아직 없음|
+|`ingest.collect_job.run_id`, `ingest.raw_listing.job_id`|—|새 컬럼 (0008)|어느 실행에서 모은 원본인지|
 |CHECK 추가|—|가격 0 이상, 목표가 알림은 `target_price` 필수, 문의는 이동 기록이나 구매 중 하나, 새 매장 제보만 `store_id` NULL, 매칭된 원본만 `matched_variant_id`||

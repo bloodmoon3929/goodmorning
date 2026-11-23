@@ -2,7 +2,7 @@
 
 UI 구상 PPT([docs/02-screens.md](../docs/02-screens.md))의 화면 25장을 FigCraft로 다시 그리고, 버튼마다 다음 화면을 이어 둔 클릭 프로토타입이다.
 
-- 바로 보기: https://bloodmoon3929.github.io/goodmorning/ (GitHub Actions가 `prototype/site`를 GitHub Pages로 배포)
+- 2026-11-23부터 GitHub Pages에는 올리지 않는다 (그 자리 `/goodmorning/`에 관리자 페이지). 보려면 `prototype/site`에서 `python3 -m http.server` 후 열기
 - 원본 파일: [`goodmorning.figcraft`](goodmorning.figcraft) — FigCraft에서 열면 화면 28장과 클릭 연결(Prototype)이 그대로 있다. 발표 모드(▶)로 재생할 수 있다.
 
 ## 화면

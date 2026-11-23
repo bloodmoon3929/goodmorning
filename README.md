@@ -8,11 +8,11 @@ UST AI 응용을 위한 UX 설계 · 팀 에뚜리들 (김상우, 임상원, 전
 
 |#|항목|상태|위치|
 |--|--|--|--|
-|1|크롤링 구현|구현함 (Scrapy + Playwright, robots.txt 준수, `crawl_allowed` 몰만)|[`backend/collector/spiders/`](backend/collector/spiders/)|
-|2|쇼핑 API 구현|구현함 (쿠팡 파트너스, 키 발급 후 실제 호출 확인 필요)|[`backend/collector/api_clients/`](backend/collector/api_clients/)|
-|3|DB 구현|구현함 (PostgreSQL + PostGIS + pgvector, 스키마 5개 · 테이블 28개, 개발용 가상 데이터)|[`backend/db/`](backend/db/)|
-|4|Rust 기반 백엔드 구현|구현함 (Axum + sqlx, MVC)|[`backend/api/`](backend/api/), API 목록은 [`backend/README.md`](backend/README.md)|
-|5|SAM 3D나 가우시안 스플래팅으로 에셋을 만들어, 이 에셋을 나만의 집에 장식할 수 있는 기능 (싸이월드 느낌)|아직|—|
+|1|크롤링 구현|구현함: 실제 몰 4곳(반다이남코코리아몰 · 포켓몬스토어 · 대원샵 · 텐바이텐, robots.txt · 약관 확인). Scrapy + Playwright. 관리자 페이지에서 실행 · 단계별 진행 확인|[`backend/collector/spiders/`](backend/collector/spiders/), [`sites.real.toml`](backend/collector/sites.real.toml)|
+|2|쇼핑 API 구현|구현함: 치이카와 마켓 공개 상품 JSON(키 없음, 실제 호출 · 환율 변환). 쿠팡 파트너스는 코드 있음, 키 발급 후 호출 확인 필요|[`backend/collector/api_clients/`](backend/collector/api_clients/)|
+|3|DB 구현|구현함 (PostgreSQL + PostGIS + pgvector, 스키마 5개 · 테이블 31개, 개발용 가상 데이터)|[`backend/db/`](backend/db/)|
+|4|Rust 기반 백엔드 구현|구현함 (Axum + sqlx, MVC) + 관리자 페이지 `/console/`|[`backend/api/`](backend/api/), API 목록은 [`backend/README.md`](backend/README.md)|
+|5|SAM 3D나 가우시안 스플래팅으로 에셋을 만들어, 이 에셋을 나만의 집에 장식할 수 있는 기능 (싸이월드 느낌)|시연 구현함: 굿즈 360° 영상 1개 → SAM 3 분할 → 가우시안 스플래팅 → 앱 '내 방' 탭에서 방에 배치. 다시 찍을 수 있게 앱에 자동 촬영 가이드(얼굴 등록처럼 높이 3줄 × 방향 24칸). SAM 3D Objects는 가중치 승인 대기(403), 실행 환경은 준비|[`backend/ai/asset3d/`](backend/ai/asset3d/), [`frontend/lib/features/room/`](frontend/lib/features/room/)|
 
 > 네이버 쇼핑 검색 API는 2026-07-31에 종료되어(NAVER API HUB로도 옮겨지지 않음) 쇼핑 API는 쿠팡 파트너스만 연동했다.
 
@@ -60,23 +60,28 @@ goodmorning/
 │   ├── 04-db.md           # DB 설계
 │   └── slides/            # 슬라이드 이미지 43장
 ├── design/                # 원본 PPT · 캐릭터 이미지 · 로고 (저장소에는 올리지 않음)
-├── frontend/              # Flutter 앱
+├── prototype/             # FigCraft 클릭 프로토타입 (GitHub Pages에는 더 이상 올리지 않음 — 그 자리에 관리자 페이지)
+├── frontend/              # Flutter 앱 (UI 시안 표지 톤, 하단 탭 5개: 홈 · 굿즈 탐색 · 내 방 · 매장 찾기 · 마이)
 │   ├── README.md          # 화면 명세: 화면별 구성 요소, 버튼, 상태
 │   ├── lib/               # 위젯(컴포넌트) 단위 구조 — lib/README.md
 │   │   ├── components/    # 여러 화면이 함께 쓰는 위젯 (상품 카드, 배지, 필터, 스켈레톤 …)
-│   │   └── features/      # 화면 단위 (screen + view_model + widgets)
+│   │   └── features/      # 화면 단위 (screen + view_model + widgets), room/ = 내 방
+│   ├── assets/brand/      # 표지 그림 (로고 · 스티커)
+│   ├── assets/room/       # 방 그림 + 3D 에셋 결과 (촬영 프레임 · 분할 · 회전 렌더)
 │   └── test/
 └── backend/
     ├── README.md          # API 명세, 배치 작업, 실행 · 테스트 방법
     ├── db.md              # 테이블 정의
     ├── docker-compose.yml # 로컬 실행: DB + API
-    ├── api/               # Rust API 서버 (MVC) — api/README.md
+    ├── api/               # Rust API 서버 (MVC) + 관리자 페이지 console/ — api/README.md
     ├── ai/                # Python AI 서버 (임베딩 · 검색 · 상품 매칭) — 아직 폴더만
-    ├── collector/         # Python 수집기 (쿠팡 파트너스 API, Scrapy + Playwright) — collector/README.md
+    │   └── asset3d/       # 굿즈 영상 → SAM 3 → SfM → 3D 가우시안 스플래팅 → 앱 에셋 — ai/asset3d/README.md
+    ├── collector/         # Python 수집기 (쿠팡 파트너스 API, Scrapy + Playwright, 워커 · 데모 대상) — collector/README.md
     └── db/                # PostgreSQL 이미지 · 마이그레이션 · 개발용 가상 데이터 — db/README.md
 ```
 
-> 백엔드는 DB · API · 수집기까지 구현했다. AI 서버와 앱(Flutter)의 HTTP 연결은 아직이다 (앱은 목업 API로 동작).
+> 백엔드는 DB · API · 수집기 · 관리자 페이지까지 구현했다. AI 서버(임베딩 · 매칭)와 앱(Flutter)의 HTTP 연결은 아직이다 (앱은 목업 API로 동작).
+> 3D 에셋은 영상 하나로 PC(GPU)에서 미리 만든 결과를 앱에 넣었다. 앱에서 촬영해 바로 만드는 것은 아직이다.
 
 ## 시스템 구성
 

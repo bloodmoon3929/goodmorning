@@ -30,10 +30,11 @@ api/
 │   ├── error.rs        # 에러 → HTTP 상태 · {"error", "message"}
 │   ├── seed.rs         # 개발용 가상 데이터 넣기 (db/seed/dev_seed.sql)
 │   └── main.rs         # 시작: 설정 → DB 연결 → 마이그레이션 → 서버
+├── console/            # 관리자 페이지 (index.html · app.js · style.css · logo.png) — /console/ 에서 내려준다
 └── tests/api.rs        # 실제 DB에 붙는 통합 테스트
 ```
 
-기능별 파일: `catalog`(IP · 캐릭터) · `product` · `search` · `store` · `auth` · `me`(마이) · `offer`(구매하러 가기) · `report`(재고 · 매장 제보) · `seller`(판매자 센터) · `admin`(수집 원본 매칭 · 상태 확인).
+기능별 파일: `catalog`(IP · 캐릭터) · `product` · `search` · `store` · `auth` · `me`(마이) · `offer`(구매하러 가기) · `report`(재고 · 매장 제보) · `seller`(판매자 센터) · `admin`(수집 원본 매칭 · 상태 확인 · 관리자 페이지의 몰 · 수집 실행) · `console`(관리자 페이지 파일).
 업무 규칙 상수(48시간 · 근처 7km · 기준 위치 서울시청 · 가격 정렬)는 `services/rules.rs`에 모았다.
 
 ## 규칙

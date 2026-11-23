@@ -7,7 +7,7 @@ Flutter에서는 컴포넌트를 위젯(Widget)이라고 부른다. 화면은 �
 lib/
 ├── app/              # 앱 시작점, 화면 이동(라우팅), 테마 적용
 ├── core/
-│   ├── theme/        # 색 코드 · 글꼴 · 간격 (docs/01-screen-flow.md 의 색 표)
+│   ├── theme/        # 색 코드 · 글꼴 · 간격 (UI 시안 표지 톤: 남색 · 민트 · 피치)
 │   ├── network/      # API 호출 공통. 지금은 목업 API(mock_api.dart · mock_data.dart)가 같은 모양으로 답한다
 │   └── cache/        # 미리 로딩 · 캐시 (docs/03-tech-spec.md 33번)
 ├── models/           # 데이터 모양 (API 응답과 같은 구조: Product, Variant, Store, Stock …)
@@ -36,6 +36,7 @@ lib/
     ├── notification/     # 알림 목록 (9)
     ├── product/          # 상품 상세 온라인 · 오프라인 (15–16)
     ├── store/            # 매장 찾기 리스트 · 지도 · 매장 상세 · 재고 제보 (17–20)
+    ├── room/             # 내 방 (하단 탭, 신규): 촬영 → 윤곽 분리 → 3D 회전 → 방 꾸미기
     ├── my/               # 마이 · 이동 기록 · 문제 제기 (21–23)
     └── seller/           # 판매자 센터 재고 관리 · 상품 등록 (24–25)
 ```

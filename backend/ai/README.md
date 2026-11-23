@@ -4,6 +4,7 @@ EmbeddingGemma 2로 사진 · 글을 768차원 벡터로 바꾸고, 비슷한 �
 
 ```text
 ai/
+├── asset3d/      # 굿즈 360° 영상 → 3D 에셋 (SAM 3 · SfM · 가우시안 스플래팅) — asset3d/README.md, 오프라인 GPU 작업
 ├── app/
 │   ├── api/          # API 서버가 부르는 주소 (사진 → 벡터, 상품 후보 찾기)
 │   ├── embedding/    # EmbeddingGemma 2 불러오기 · 벡터 만들기 → catalog.embedding 저장
