@@ -98,6 +98,26 @@ uv run python compare.py --row "가우시안 스플래팅 (영상 프레임 140�
 uv run python export_compare.py --out $OUT --id sam3d --label "SAM 3D (사진 1장)" --method "SAM 3D Objects (사진 1장 → 3D)" --turns work/cmp/sam3d --info output/pochita_sam3d.json
 ```
 
+## 확인: Gausify Orbit (같은 영상)
+
+[Gausify Orbit](https://github.com/obraia/gausify-orbit) (MIT)는 브라우저(WebGPU)에서 둘레 영상 → 선명한 프레임 160장 → SAM 2.1 분할 → 카메라 자세(AKAZE 또는 COLMAP) → Brush 학습까지 하는 도구다. 같은 영상을 넣고 분할 SAM 2.1, "Also use the cutout for poses" 켬(손으로 돌려서 배경으로는 자세를 못 구한다), Closed orbit(360°) 켬, Balanced(15,000번)로 돌렸다. 받은 .ply를 위 렌더러로 같은 방식으로 돌렸고, 0°는 정면을 맞출 카메라 정보가 없어 임의다.
+
+![우리 가우시안 · Gausify · SAM 3D 비교](docs/compare_gausify.jpg)
+
+|자세 추정|자세를 찾은 프레임|학습 · 확인용 PSNR|걸린 시간|결과|
+|--|--|--|--|--|
+|Gausify AKAZE (기본)|17/160|15장 · 2장 36.7dB|14분 (프레임 2 · 분할 1.5 · 자세 4 · 학습 6)|한쪽 면 조각 (2.9만 개)|
+|Gausify COLMAP (SIFT · 전역 매핑)|30/160 (8조각 중 가장 큰 것)|28장 · 2장 21.9dB|자세 2.5분 + 학습 7분|흐린 조각 (5.6만 개)|
+|이 폴더 (ALIKED + LightGlue)|375/380|140장 · 20장 16.7dB|약 15분|한 바퀴 전체 (11.0만 개)|
+
+Gausify의 PSNR은 확인용 2장이 자세를 찾은 좁은 구간 안에 있어서 높게 나온 값이라 비교 기준이 되지 않는다.
+
+정리: 이 영상에서는 Gausify로 품질이 나아지지 않는다. 막히는 곳은 학습이 아니라 카메라 자세다. 손으로 돌린 털 인형은 굿즈 안에서만 특징점을 맞춰야 하는데, AKAZE · SIFT는 털 표면에서 프레임끼리 이어지지 않는다 (Gausify 화면에도 굿즈 영역으로 자세를 구하는 설정은 "hurts on low-texture subjects"라고 적혀 있다). 굿즈를 받침에 세우고 카메라가 도는 촬영(자동 촬영 가이드)이면 배경도 자세 추정에 쓸 수 있으므로, 다시 찍은 사진으로 두 도구를 다시 비교한다.
+
+- 브라우저가 HEVC 영상을 못 읽어서 H.264로 바꿔 넣었다 (`ffmpeg -i in.mp4 -c:v libx264 -preset medium -crf 16 -pix_fmt yuv420p -an out.mp4`)
+- 이 PC의 헤드리스 Chrome은 `--enable-unsafe-webgpu --enable-features=Vulkan,VulkanFromANGLE --use-angle=vulkan --use-gl=angle --disable-vulkan-surface --disable-gpu-sandbox --ignore-gpu-blocklist`를 줘야 WebGPU가 NVIDIA GPU를 잡았다 (없으면 CPU의 SwiftShader)
+- 받은 파일: `output/pochita_gausify_akaze.ply` · `output/pochita_gausify_colmap.ply`. 위쪽 축은 .ply 머리의 `Vertical axis` 주석을 `render_ply.py --up`에 넣는다
+
 ## 해 봤지만 쓰지 않은 것
 
 |방법|결과|
@@ -107,7 +127,6 @@ uv run python export_compare.py --out $OUT --id sam3d --label "SAM 3D (사진 1�
 
 ## 다른 선택지
 
-- [Gausify Orbit](https://github.com/obraia/gausify-orbit) (MIT): 브라우저(WebGPU)에서 둘레 영상 → 선명한 프레임 고르기 → SAM 2.1 · RMBG 분할 → 둘레 전용 SfM → 학습까지 하는 도구. 이 폴더와 같은 흐름이라, 같은 촬영본을 넣어 결과를 비교해 볼 수 있다 (CUDA 없이 데스크톱 Chrome)
 - 파노라마(360°) 카메라: 장비를 사야 해서 이번에는 하지 않았다
 
 ## 한계
