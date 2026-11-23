@@ -33,7 +33,13 @@ def mall(conn):
         "VALUES (%s, %s, %s, 10000, 0, 'crawl', now() - interval '1 day') RETURNING id",
         (variant_id, mall_id, url),
     ).fetchone()["id"]
-    return {"name": name, "id": mall_id, "variant_id": variant_id, "url": url, "offer_id": offer_id}
+    yield {"name": name, "id": mall_id, "variant_id": variant_id, "url": url, "offer_id": offer_id}
+    # 개발용 DB를 같이 쓰는 API 테스트(최저가 순서)에 끼어들지 않게 치운다
+    conn.execute("DELETE FROM online.offer_history WHERE offer_id IN (SELECT id FROM online.offer WHERE mall_id = %s)", (mall_id,))
+    conn.execute("DELETE FROM online.offer WHERE mall_id = %s", (mall_id,))
+    conn.execute("DELETE FROM ingest.raw_listing WHERE mall_id = %s", (mall_id,))
+    conn.execute("DELETE FROM ingest.collect_job WHERE mall_id = %s", (mall_id,))
+    conn.execute("DELETE FROM online.mall WHERE id = %s", (mall_id,))
 
 
 def listing(mall: dict, url: str, price, shipping=0, sold_out=False) -> Listing:
